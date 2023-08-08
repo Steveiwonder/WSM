@@ -6,10 +6,14 @@ using Quartz.Spi;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using WSM.Client.Configuration;
 using WSM.Client.Jobs;
 using WSM.Client.Models;
+using WSM.Shared;
+using WSM.Shared.Dtos;
 
 namespace WSM.Client
 {
@@ -17,20 +21,23 @@ namespace WSM.Client
     {
         private readonly IJobFactory _jobFactory;
         private readonly AppConfiguration _appConfiguration;
+        private readonly WSMApiClient _client;
         private readonly ILogger _logger;
         private IScheduler scheduler;
 
-        public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, AppConfiguration appConfiguration)
+        public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, AppConfiguration appConfiguration, WSMApiClient client)
         {
             _logger = logger;
             _jobFactory = jobfactory;
             _appConfiguration = appConfiguration;
+            _client = client;
         }
         public void Start()
         {
             _logger.LogInformation("Service Started");
             StartScheduler();
             StartJobs();
+            RegisterHealthChecks().Wait();
         }
         public void Stop()
         {
@@ -81,7 +88,36 @@ namespace WSM.Client
             }
         }
 
-        private void RegisterJob<T>(HealthCheckDefinitionBase healthCheckDefinition, TimeSpan interval) where T: HealthCheckJobBase
+        private async Task RegisterHealthChecks()
+        {
+            var registrations = _appConfiguration.HealthChecks.Select(hc =>
+            {
+                TimeSpan interval;
+                IntervalHealthCheckDefinitionBase intervalHealthCheckDefinition = hc as IntervalHealthCheckDefinitionBase;
+                if (intervalHealthCheckDefinition != null)
+                {
+                    interval = intervalHealthCheckDefinition.Interval;
+                }
+                else
+                {
+                    interval = Constants.DefaultInterval;
+                }
+                return new HealthCheckRegistrationDto()
+                {
+                    Name = hc.Name,
+                    CheckInInterval = interval,
+                    BadStatusLimit = hc.BadStatusLimit,
+                    MissedCheckInLimit = hc.MissedCheckInLimit
+                };
+            });
+
+            await _client.RegisterHealthChecks(new HealthCheckRegistrationsDto()
+            {
+                Registrations = registrations
+            });
+        }
+
+        private void RegisterJob<T>(HealthCheckDefinitionBase healthCheckDefinition, TimeSpan interval) where T : HealthCheckJobBase
         {
             IJobDetail job = JobBuilder.Create<T>()
                       .WithIdentity(healthCheckDefinition.Name, "group1")
@@ -97,6 +133,6 @@ namespace WSM.Client
 
             scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
         }
-        
+
     }
 }

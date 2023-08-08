@@ -27,7 +27,12 @@ namespace WSM.Shared
                 Status = status
             };
 
-            await Post(dto, "healthcheck");
+            await Post(dto, "healthcheck/checkin");
+        }
+
+        public async Task RegisterHealthChecks(HealthCheckRegistrationsDto healthCheckRegistrations)
+        {
+            await Post(healthCheckRegistrations, "healthcheck/register");
         }
 
         private async Task Post(object any, string path)

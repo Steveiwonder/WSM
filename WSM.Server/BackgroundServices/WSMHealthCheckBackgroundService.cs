@@ -16,6 +16,7 @@ namespace WSM.Server.BackgroundServices
         private readonly WSMHealthCheckService _healthCheckService;
         private readonly ILogger<WSMHealthCheckBackgroundService> _logger;
         private readonly IConfiguration _configuration;
+        private readonly INotificationService _notificationService;
         private readonly TimeSpan _alertFrequency;
         private readonly TimeSpan _reportSlipDuration;
         private readonly TimeSpan _backgroundServiceDelay;
@@ -23,11 +24,13 @@ namespace WSM.Server.BackgroundServices
 
         public WSMHealthCheckBackgroundService(WSMHealthCheckService healthCheckService,
             ILogger<WSMHealthCheckBackgroundService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            INotificationService notificationService)
         {
             _healthCheckService = healthCheckService;
             _logger = logger;
             _configuration = configuration;
+            _notificationService = notificationService;
             _alertFrequency = configuration.GetSection("AlertFrequency").Get<TimeSpan>();
             _reportSlipDuration = configuration.GetSection("ReportSlipDuration").Get<TimeSpan>();
             _backgroundServiceDelay = configuration.GetSection("BackgroundServiceDelay").Get<TimeSpan>();
@@ -42,7 +45,7 @@ namespace WSM.Server.BackgroundServices
                 {
                     try
                     {
-                        if(healthCheck.NextStatusCheckTime> DateTime.UtcNow)
+                        if (healthCheck.NextStatusCheckTime > DateTime.UtcNow)
                         {
                             continue;
                         }
@@ -56,7 +59,7 @@ namespace WSM.Server.BackgroundServices
 
                         bool hasBadStatus = HasBadStatus(healthCheck);
                         if (hasBadStatus)
-                        {                         
+                        {
                             SendBadStatusAlert(healthCheck);
                         }
                         healthCheck.UpdateNextStausCheckTime();
@@ -78,7 +81,7 @@ namespace WSM.Server.BackgroundServices
             if (!hasMissedCheckIn && healthCheckStatus.MissedCheckInCount != 0)
             {
                 healthCheckStatus.ResetMissedCheckInCount();
-                SendWhatsAppMessage($"{healthCheckStatus.Name} has checked in");
+                _notificationService.SendNotificationAsync($"{healthCheckStatus.Name} has checked in");
             }
 
             return hasMissedCheckIn;
@@ -91,8 +94,8 @@ namespace WSM.Server.BackgroundServices
             if (!hasBadStatus && healthCheckStatus.BadStatusCount != 0)
             {
                 healthCheckStatus.ResetBadStatusCount();
-                SendWhatsAppMessage($"{healthCheckStatus.Name} is now OK");
-                
+                _notificationService.SendNotificationAsync($"{healthCheckStatus.Name} is now OK");
+
             }
 
             return hasBadStatus;
@@ -100,7 +103,7 @@ namespace WSM.Server.BackgroundServices
 
         private bool CanSendMissedCheckInAlert(HealthCheckStatus healthCheckStatus)
         {
-            bool hasExceededMissedCheckInLimit = healthCheckStatus.MissedCheckInCount > healthCheckStatus.HealthCheck.MissedCheckInLimit;
+            bool hasExceededMissedCheckInLimit = healthCheckStatus.MissedCheckInCount >= healthCheckStatus.HealthCheck.MissedCheckInLimit;
             bool hasNeverSentAlert = healthCheckStatus.LastMissedCheckInAlertSent == null;
             bool canSendNextAlert = healthCheckStatus.LastMissedCheckInAlertSent == null || DateTime.UtcNow > healthCheckStatus.LastMissedCheckInAlertSent.Value.Add(_alertFrequency);
             return (hasExceededMissedCheckInLimit) && (hasNeverSentAlert || canSendNextAlert);
@@ -108,7 +111,7 @@ namespace WSM.Server.BackgroundServices
 
         private bool CanSendBadStatusAlert(HealthCheckStatus healthCheckStatus)
         {
-            bool hasExceededBadStatusLimit = healthCheckStatus.BadStatusCount > healthCheckStatus.HealthCheck.BadStatusLimit;
+            bool hasExceededBadStatusLimit = healthCheckStatus.BadStatusCount >= healthCheckStatus.HealthCheck.BadStatusLimit;
             bool hasNeverSentAlert = healthCheckStatus.LastBadStatusAlertSent == null;
             bool canSendNextAlert = healthCheckStatus.LastBadStatusAlertSent == null || DateTime.UtcNow > healthCheckStatus.LastBadStatusAlertSent.Value.Add(_alertFrequency);
             return (hasExceededBadStatusLimit) && (hasNeverSentAlert || canSendNextAlert);
@@ -124,7 +127,7 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} hasn't checked in, last check in time was {(healthCheckStatus.LastCheckInTime == null ? "never" : healthCheckStatus.LastCheckInTime.ToString())}";
             _logger.LogWarning(msg);
 
-            SendWhatsAppMessage(msg);
+            _notificationService.SendNotificationAsync(msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastMissedCheckInAlertSent();
         }
@@ -139,24 +142,11 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} reported a bad status, '{healthCheckStatus.LastStatus}', reported {healthCheckStatus.BadStatusCount} times";
             _logger.LogWarning(msg);
 
-            SendWhatsAppMessage(msg);
+            _notificationService.SendNotificationAsync(msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastBadCheckInAlertSent();
         }
 
-        private void SendWhatsAppMessage(string message)
-        {
-            var accountSid = _configuration.GetSection("Twilio:AccountId").Get<string>();
-            var authToken = _configuration.GetSection("Twilio:AuthToken").Get<string>();
-            var from = _configuration.GetSection("Twilio:From").Get<string>();
-            var to = _configuration.GetSection("Twilio:To").Get<string>();
-            TwilioClient.Init(accountSid, authToken);
 
-            var messageOptions = new CreateMessageOptions(new PhoneNumber(to));
-            messageOptions.From = new PhoneNumber(from);
-            messageOptions.Body = message;
-
-            MessageResource.Create(messageOptions);
-        }
     }
 }

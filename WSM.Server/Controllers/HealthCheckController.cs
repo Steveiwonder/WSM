@@ -18,8 +18,8 @@ namespace WSM.Server.Controllers
             _healthCheckService = healthCheckService;
         }
 
-        [HttpPost]
-        public void Post(HealthCheckReportDto healthCheckReport)
+        [HttpPost("CheckIn")]
+        public void CheckIn(HealthCheckReportDto healthCheckReport)
         {
             _healthCheckService.CheckIn(healthCheckReport);
         }
@@ -28,6 +28,13 @@ namespace WSM.Server.Controllers
         public IActionResult Status()
         {
             return Ok(_healthCheckService.GetStatus());
+        }
+
+        [HttpPost("Register")]
+        public IActionResult Register(HealthCheckRegistrationsDto healthCheckRegistrations)
+        {
+            _healthCheckService.Register(healthCheckRegistrations);
+            return Ok();
         }
     }
 }

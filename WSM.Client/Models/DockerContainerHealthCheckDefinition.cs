@@ -2,9 +2,8 @@
 
 namespace WSM.Client.Models
 {
-    public class DockerContainerHealthCheckDefinition : HealthCheckDefinitionBase
-    {
-        public TimeSpan Interval { get; set; }
+    public class DockerContainerHealthCheckDefinition : IntervalHealthCheckDefinitionBase
+    {        
         public string ContainerName { get; set; }
     }
 }

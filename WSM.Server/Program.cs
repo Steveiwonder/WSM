@@ -41,17 +41,17 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddSingleton<INotificationService, WhatsAppNotificationServicerService>();
 builder.Services.AddHostedService<WSMHealthCheckBackgroundService>();
 builder.Services.AddSingleton<WSMHealthCheckService>();
 builder.Services.AddAuthentication(ApplicationIdAuthenticationOptions.DefaultScheme)
     .AddScheme<ApplicationIdAuthenticationOptions, ApplicationIdAuthenticationHandler>(ApplicationIdAuthenticationOptions.DefaultScheme, options =>
     {
-        
+
     });
 
 /*Configuration*/
-var healthChecks = builder.Configuration.GetSection("HealthChecks").Get<HealthCheck[]>();
-builder.Services.AddSingleton<IEnumerable<HealthCheck>>(healthChecks);
+
 
 builder.Services.AddSingleton(new ApplicationIds() { Values = builder.Configuration.GetSection("ApplicationIds").Get<string[]>() });
 var app = builder.Build();
