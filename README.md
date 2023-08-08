@@ -36,7 +36,7 @@ There are two steps for installing the server
 1. Create an appsettings.json file
 2. Running the docker container
 
-Create an appsettins.json file somewhere on your server _e.g._ /app/appsettings.json
+Create an appsettings.json file somewhere on your server _e.g._ /app/appsettings.json
 Here is an example `appsettings.json`
 ```json
 {
@@ -128,4 +128,13 @@ If you use `WhatsApp` then you must supply the `Twilio` configuration.
 - `AuthToken` your Twilio Auth Token - available within Twilio console https://console.twilio.com
 - `From` your Twilio phone number that the message should be sent from. For WhatsApp it's in the format of `whatsapp:+1555555555555`
 - `To` is the number the message should be sent to. For WhatsApp it's in the format of `whatsapp:+1555555555555`
+
+Running the container
+
+`docker run -d -p 80:80 -v /app/appsettings.json:/app/appsettings.json --name wsm.server --restart unless-stopped  steveiwonder/wsm.server`
+
+## Client
+
+
+
 
