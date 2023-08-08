@@ -14,9 +14,9 @@ namespace WSM.Client.Jobs
     public class TcpPortHealthCheckJob : HealthCheckJobBase
     {
 
-        private readonly ILogger<ProcessHealthCheckJob> _logger;
+        private readonly ILogger<TcpPortHealthCheckJob> _logger;
 
-        public TcpPortHealthCheckJob(ILogger<ProcessHealthCheckJob> logger, WSMApiClient client) : base(client)
+        public TcpPortHealthCheckJob(ILogger<TcpPortHealthCheckJob> logger, WSMApiClient client) : base(client)
         {
             _logger = logger;
         }

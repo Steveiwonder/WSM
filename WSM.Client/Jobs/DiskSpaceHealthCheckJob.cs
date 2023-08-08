@@ -17,10 +17,10 @@ namespace WSM.Client.Jobs
     [DisallowConcurrentExecution]
     public class DiskSpaceHealthCheckJob : HealthCheckJobBase
     {
-        private readonly ILogger<ProcessHealthCheckJob> _logger;
+        private readonly ILogger<DiskSpaceHealthCheckJob> _logger;
         private const string DiskNotFoundStatus = "Disk not found";
         private const string DiskSpaceLowStatus = "Disk space low";
-        public DiskSpaceHealthCheckJob(ILogger<ProcessHealthCheckJob> logger, WSMApiClient client) : base(client)
+        public DiskSpaceHealthCheckJob(ILogger<DiskSpaceHealthCheckJob> logger, WSMApiClient client) : base(client)
         {
             _logger = logger;
         }
