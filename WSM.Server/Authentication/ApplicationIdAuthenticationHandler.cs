@@ -9,41 +9,39 @@ namespace WSM.Server.Authentication
     public class ApplicationIdAuthenticationHandler :
     AuthenticationHandler<ApplicationIdAuthenticationOptions>
     {
-        private readonly ApplicationIds _applicationIds;
+        private readonly IEnumerable<ServerConfiguration> _servers;
 
         public ApplicationIdAuthenticationHandler
             (IOptionsMonitor<ApplicationIdAuthenticationOptions> options,
             ILoggerFactory logger, UrlEncoder encoder,
             ISystemClock clock,
-            ApplicationIds applicationIds)
+            IEnumerable<ServerConfiguration> servers)
             : base(options, logger, encoder, clock)
         {
-            _applicationIds = applicationIds;
+            _servers = servers;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            //check header first
             if (!Request.Headers
                 .ContainsKey(Options.TokenHeaderName))
             {
                 return AuthenticateResult.Fail($"Missing header: {Options.TokenHeaderName}");
             }
 
-            //get the header and validate
-            string token = Request
+            string apiKey = Request
                 .Headers[Options.TokenHeaderName]!;
 
-            //usually, this is where you decrypt a token and/or lookup a database.
-            if (!_applicationIds.Values.Contains(token))
+            var server = _servers.FirstOrDefault(d => d.ApiKey == apiKey);
+            if (server == null)
             {
                 return AuthenticateResult
                     .Fail($"Invalid token.");
             }
-            //Success! Add details here that identifies the user
             var claims = new List<Claim>()
-        {
-            new Claim("ApplicationId", token)
-        };
+            {
+                new Claim(ClaimConstants.ApiKey, apiKey),
+                new Claim(ClaimConstants.ServerName, server.Name),
+            };
 
             var claimsIdentity = new ClaimsIdentity
                 (claims, Scheme.Name);

@@ -1,11 +1,5 @@
-﻿using Twilio.Types;
-using Twilio;
-using WSM.Server.Services;
-using Twilio.Rest.Api.V2010.Account;
-using WSM.Shared.Dtos;
-using System;
+﻿using WSM.Server.Services;
 using WSM.Shared;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using WSM.Server.Models;
 
 namespace WSM.Server.BackgroundServices
@@ -15,7 +9,6 @@ namespace WSM.Server.BackgroundServices
 
         private readonly WSMHealthCheckService _healthCheckService;
         private readonly ILogger<WSMHealthCheckBackgroundService> _logger;
-        private readonly IConfiguration _configuration;
         private readonly INotificationService _notificationService;
         private readonly TimeSpan _alertFrequency;
         private readonly TimeSpan _reportSlipDuration;
@@ -29,7 +22,6 @@ namespace WSM.Server.BackgroundServices
         {
             _healthCheckService = healthCheckService;
             _logger = logger;
-            _configuration = configuration;
             _notificationService = notificationService;
             _alertFrequency = configuration.GetSection("AlertFrequency").Get<TimeSpan>();
             _reportSlipDuration = configuration.GetSection("ReportSlipDuration").Get<TimeSpan>();
@@ -41,33 +33,44 @@ namespace WSM.Server.BackgroundServices
             await Task.Delay(_backgroundServiceDelay);
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var healthCheck in _healthCheckService.GetStatus())
+                _logger.LogInformation("Getting server statuses");
+                foreach (var serverStatusesKvp in _healthCheckService.GetServerStatuses())
                 {
-                    try
+                    _logger.LogInformation($"Processing server {serverStatusesKvp.Key}");
+                    foreach (var healthCheckKvp in serverStatusesKvp.Value)
                     {
-                        if (healthCheck.NextStatusCheckTime > DateTime.UtcNow)
+                        _logger.LogInformation($"Checking health for {healthCheckKvp.Key}");
+                        var healthCheckStatus = healthCheckKvp.Value;
+                        try
                         {
-                            continue;
-                        }
-                        bool hasMissedCheckIn = HasMissedCheckIn(healthCheck);
+                            if (healthCheckStatus.NextStatusCheckTime > DateTime.UtcNow)
+                            {
+                                _logger.LogTrace($"{healthCheckKvp.Key} is not due a health check, next due {healthCheckStatus.NextStatusCheckTime}");
+                                continue;
+                            }
+                            bool hasMissedCheckIn = HasMissedCheckIn(healthCheckStatus);
 
-                        if (hasMissedCheckIn)
+                            if (hasMissedCheckIn)
+                            {
+
+                                healthCheckStatus.IncrementMissedCheckInCount();
+                                _logger.LogInformation($"{healthCheckStatus.Name} missed a checkin, {healthCheckStatus.MissedCheckInCount}/{healthCheckStatus.HealthCheck.MissedCheckInLimit}");
+                                SendMissedCheckInAlert(healthCheckStatus);
+                            }
+
+                            bool hasBadStatus = HasBadStatus(healthCheckStatus);
+                            if (hasBadStatus)
+                            {
+                                _logger.LogInformation($"{healthCheckStatus.Name} missed a bad status, {healthCheckStatus.BadStatusCount}/{healthCheckStatus.HealthCheck.BadStatusLimit}");
+                                SendBadStatusAlert(healthCheckStatus);
+                            }
+                            healthCheckStatus.UpdateNextStausCheckTime();
+
+                        }
+                        catch (Exception ex)
                         {
-                            healthCheck.IncrementMissedCheckInCount();
-                            SendMissedCheckInAlert(healthCheck);
+                            _logger.LogError(ex, "ExecuteAsync");
                         }
-
-                        bool hasBadStatus = HasBadStatus(healthCheck);
-                        if (hasBadStatus)
-                        {
-                            SendBadStatusAlert(healthCheck);
-                        }
-                        healthCheck.UpdateNextStausCheckTime();
-
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "ExecuteAsync");
                     }
                     await Task.Delay(500);
                 }

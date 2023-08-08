@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq;
+using System.Security.Claims;
 using WSM.Server.Configuration;
 using WSM.Server.Models;
 using WSM.Shared;
@@ -8,28 +10,50 @@ namespace WSM.Server.Services
 {
     public class WSMHealthCheckService
     {
-        private ConcurrentDictionary<string, HealthCheck> _healthChecks = new ConcurrentDictionary<string, HealthCheck>();
-        private ConcurrentDictionary<string, HealthCheckStatus> _healthCheckStatus = new ConcurrentDictionary<string, HealthCheckStatus>(StringComparer.OrdinalIgnoreCase);
+
+        private ConcurrentDictionary<string, RegisteredServer> _servers =
+            new ConcurrentDictionary<string, RegisteredServer>(StringComparer.OrdinalIgnoreCase);
+
+
         private readonly ILogger<WSMHealthCheckService> _logger;
         private readonly INotificationService _notificationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private ClaimsPrincipal ClaimsPrincipal => _httpContextAccessor?.HttpContext?.User;
 
-        public WSMHealthCheckService(ILogger<WSMHealthCheckService> logger, INotificationService notificationService)
+        public WSMHealthCheckService(ILogger<WSMHealthCheckService> logger, INotificationService notificationService, IHttpContextAccessor httpContextAccessor)
         {
 
             _logger = logger;
             _notificationService = notificationService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+
+
+        private RegisteredServer GetServer()
+        {
+            var applicationId = ClaimsPrincipal.FindFirstValue(ClaimConstants.ApiKey);
+            var serverName = ClaimsPrincipal.FindFirstValue(ClaimConstants.ServerName);
+            if (!_servers.ContainsKey(applicationId))
+            {
+                var server = new RegisteredServer(serverName);
+                _servers.TryAdd(applicationId, server);
+                return server;
+            }
+            return _servers[applicationId];
         }
 
 
         public bool CheckIn(HealthCheckReportDto healthCheckReport)
         {
-            if (!_healthCheckStatus.ContainsKey(healthCheckReport.Name))
+            var server = GetServer();
+            if (!server.ContainsHealthCheck(healthCheckReport.Name))
             {
                 _logger.LogWarning($"Unknown health check name {healthCheckReport.Name}");
                 return false;
             }
             _logger.LogInformation($"Check in from {healthCheckReport.Name}");
-            var healthCheckStatus = _healthCheckStatus[healthCheckReport.Name];
+            var healthCheckStatus = server.GetHealthCheckStatus(healthCheckReport.Name);
             healthCheckStatus.UpdateNextCheckInTime();
             healthCheckStatus.UpdateLastCheckInTime(DateTime.UtcNow);
             healthCheckStatus.UpdateStatus(healthCheckReport.Status);
@@ -42,12 +66,22 @@ namespace WSM.Server.Services
 
         internal IEnumerable<HealthCheckStatus> GetStatus()
         {
-            return _healthCheckStatus.Values;
-        }     
+            return GetServer().HealthChecks.Values;
+        }
+
+        internal Dictionary<string, Dictionary<string, HealthCheckStatus>> GetServerStatuses()
+        {
+            return _servers.ToDictionary(key => key.Key, value =>
+            {
+                return new Dictionary<string, HealthCheckStatus>(value.Value.HealthChecks);
+            });
+        }
+
         internal void Register(HealthCheckRegistrationDto registration)
         {
-            _healthChecks.TryRemove(registration.Name, out _);
-            _healthCheckStatus.TryRemove(registration.Name, out _);
+            var server = GetServer();
+
+            server.TryRemoveHealthCheck(registration.Name, out _);
 
             var healthCheck = new HealthCheck()
             {
@@ -62,9 +96,8 @@ namespace WSM.Server.Services
                 HealthCheck = healthCheck
             };
             healthCheckStatus.UpdateNextCheckInTime();
-            _healthChecks.TryAdd(healthCheck.Name, healthCheck);
-            _healthCheckStatus.TryAdd(healthCheck.Name, healthCheckStatus);
-            _notificationService.SendNotificationAsync($"New Health Check Registration\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
+            server.TryAddHealthCheck(healthCheck.Name, healthCheckStatus);
+            _notificationService.SendNotificationAsync($"New Health Check Registration\r\nServer: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
 
         }
     }

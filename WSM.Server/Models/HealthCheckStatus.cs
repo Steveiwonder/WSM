@@ -1,72 +1,108 @@
-﻿using WSM.Server.Configuration;
+﻿using System.Collections.Concurrent;
+using WSM.Server.Configuration;
 
 namespace WSM.Server.Models
 {
+    internal class RegisteredServer
+    {
+        internal RegisteredServer(string name)
+        {
+            Name = name;
+            HealthChecks = new ConcurrentDictionary<string, HealthCheckStatus>();
+        }
+
+        internal string Name { get; init; }
+        internal ConcurrentDictionary<string, HealthCheckStatus> HealthChecks { get; }
+
+        internal bool ContainsHealthCheck(string name)
+        {
+            return HealthChecks.ContainsKey(name);
+        }
+
+        internal HealthCheckStatus GetHealthCheckStatus(string name)
+        {
+            if (!HealthChecks.ContainsKey(name))
+            {
+                return null;
+            }
+            return HealthChecks[name];
+        }
+
+        internal bool TryAddHealthCheck(string name, HealthCheckStatus healthCheckStatus)
+        {
+            return HealthChecks.TryAdd(name, healthCheckStatus);
+        }
+
+        internal bool TryRemoveHealthCheck(string name, out HealthCheckStatus healthCheck)
+        {
+            return HealthChecks.TryRemove(name, out healthCheck);
+        }
+    }
     internal class HealthCheckStatus
     {
-        public HealthCheck HealthCheck { get; init; }
+        internal HealthCheck HealthCheck { get; init; }
 
-        public string Name => HealthCheck.Name;
-        public DateTime NextCheckInTime { get; private set; }
-        public DateTime NextStatusCheckTime { get; private set; }
-        public DateTime? LastCheckInTime { get; private set; }
-        public string LastStatus { get; private set; }
-        public int BadStatusCount { get; private set; }
-        public int MissedCheckInCount { get; private set; }
-        public DateTime? LastBadStatusAlertSent { get; private set; }
-        public DateTime? LastMissedCheckInAlertSent { get; private set; }
+        internal string Name => HealthCheck.Name;
+        internal DateTime NextCheckInTime { get; private set; }
+        internal DateTime NextStatusCheckTime { get; private set; }
+        internal DateTime? LastCheckInTime { get; private set; }
+        internal string LastStatus { get; private set; }
+        internal int BadStatusCount { get; private set; }
+        internal int MissedCheckInCount { get; private set; }
+        internal DateTime? LastBadStatusAlertSent { get; private set; }
+        internal DateTime? LastMissedCheckInAlertSent { get; private set; }
 
-        public void UpdateNextCheckInTime()
+        internal void UpdateNextCheckInTime()
         {
             NextCheckInTime = DateTime.UtcNow.Add(HealthCheck.CheckInInterval);
         }
 
-        public void UpdateLastCheckInTime(DateTime lastCheckIn)
+        internal void UpdateLastCheckInTime(DateTime lastCheckIn)
         {
             LastCheckInTime = lastCheckIn;
         }
 
-        public void UpdateStatus(string status)
+        internal void UpdateStatus(string status)
         {
             LastStatus = status;
         }
 
-        public void IncrementBadStatusCount()
+        internal void IncrementBadStatusCount()
         {
             BadStatusCount++;
         }
 
-        public void IncrementMissedCheckInCount()
+        internal void IncrementMissedCheckInCount()
         {
             MissedCheckInCount++;
         }
 
-        public void UpdateLastBadCheckInAlertSent()
+        internal void UpdateLastBadCheckInAlertSent()
         {
             LastBadStatusAlertSent = DateTime.UtcNow;
         }
 
-        public void UpdateLastMissedCheckInAlertSent()
+        internal void UpdateLastMissedCheckInAlertSent()
         {
             LastMissedCheckInAlertSent = DateTime.UtcNow;
         }
 
-        public void UpdateNextStausCheckTime()
+        internal void UpdateNextStausCheckTime()
         {
             NextStatusCheckTime = DateTime.UtcNow.Add(HealthCheck.CheckInInterval);
         }
-        public void ResetMissedCheckInCount()
+        internal void ResetMissedCheckInCount()
         {
             MissedCheckInCount = 0;
             LastMissedCheckInAlertSent = null;
         }
 
-        public void ResetBadStatusCount()
+        internal void ResetBadStatusCount()
         {
             BadStatusCount = 0;
             LastBadStatusAlertSent = null;
         }
 
-    
+
     }
 }

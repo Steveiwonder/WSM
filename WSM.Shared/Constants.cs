@@ -8,7 +8,7 @@ namespace WSM.Shared
 {
     public static class Constants
     {
-        public static readonly TimeSpan DefaultInterval = TimeSpan.FromMinutes(5);
+        public static readonly TimeSpan DefaultInterval = TimeSpan.FromSeconds(5);
         public const string AvailableStatus = "Available";
         public const string NotAvailableStatus = "Unavailable";
         public const int DefaultMissedCheckInLimit = 2;

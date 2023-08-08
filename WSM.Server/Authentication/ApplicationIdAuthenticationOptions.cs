@@ -2,10 +2,10 @@
 
 namespace WSM.Server.Authentication
 {
-    public class ApplicationIdAuthenticationOptions: AuthenticationSchemeOptions
+    public class ApplicationIdAuthenticationOptions : AuthenticationSchemeOptions
     {
-        public const string DefaultScheme = "ApplicationId";
+        public const string DefaultScheme = "ApiKey";
         public string TokenHeaderName { get; set; } = "Authorization";
-   
+
     }
 }

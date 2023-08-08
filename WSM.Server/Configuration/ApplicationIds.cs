@@ -1,7 +1,8 @@
 ﻿namespace WSM.Server.Configuration
 {
-    public class ApplicationIds
+    public class ServerConfiguration
     {
-        public IEnumerable<string> Values { get; init; }
+        public string ApiKey { get; set; }
+        public string Name { get; set; }
     }
 }

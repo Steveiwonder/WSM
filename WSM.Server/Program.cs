@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using WSM.Server.Authentication;
 using WSM.Server.BackgroundServices;
 using WSM.Server.Configuration;
@@ -49,11 +50,13 @@ builder.Services.AddAuthentication(ApplicationIdAuthenticationOptions.DefaultSch
     {
 
     });
+builder.Services.AddHttpContextAccessor();
+
 
 /*Configuration*/
 
 
-builder.Services.AddSingleton(new ApplicationIds() { Values = builder.Configuration.GetSection("ApplicationIds").Get<string[]>() });
+builder.Services.AddSingleton(builder.Configuration.GetSection("Servers").Get<IEnumerable<ServerConfiguration>>());
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
