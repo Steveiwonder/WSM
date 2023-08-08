@@ -7,8 +7,8 @@ WSM is a service for monitoring different aspects of a Windows server and alerti
 - Heartbeat, this is a general heartbeat that the client must send at a set interval. This could be used to determine if the server has gone down
 - Disk Space, check for a minimum amount of required free space before alerting
 - Docker Containers, checks for a "running" state of a docker container
-- Running Processes, checks for at least once instance of the given process name
-- TCP Port Connectivity, checks if a port can be connected to using TCP
+- Running Processes, checks for at least one instance of the given process name
+- TCP Port Connectivity, checks if a port is open using a TcpClient
 
 ### How does it work?
 WSM is split into two components the server and the client.
@@ -23,10 +23,10 @@ There are two different types of triggers for alerts
 - Bad Status Reported
 
 #### Missed Check In
-This can occur when the configured health check doesn't report into the server within the defined amount of time
+This can occur when the configured health check doesn't report to the server within the defined amount of time
 
 #### Bad Status Reported
-By default, all health checks should report a state of "Available" to the server, any other state will trigger the an alert to be sent with an invalid state
+By default, all health checks should report a state of "Available" to the server, any other state will trigger the alert to be sent with an invalid state
 
 # Installation
 WSM is designed to run on two separate servers, a good example is having a very cheap cloud-based VM that you can run the server on, the run the client on your home lab/server.
