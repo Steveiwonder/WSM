@@ -9,21 +9,22 @@ using System.Collections.Specialized;
 using System.Text;
 using WSM.Client.Configuration;
 using WSM.Client.Jobs;
+using WSM.Client.Models;
 
 namespace WSM.Client
 {
-    public class WindowService
+    internal class WindowService
     {
         private readonly IJobFactory _jobFactory;
+        private readonly AppConfiguration _appConfiguration;
         private readonly ILogger _logger;
         private IScheduler scheduler;
-        private readonly QuartzConfig _quartzConfig;
 
-        public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, IOptions<QuartzConfig> options)
+        public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, AppConfiguration appConfiguration)
         {
             _logger = logger;
             _jobFactory = jobfactory;
-            _quartzConfig = options.Value;
+            _appConfiguration = appConfiguration;
         }
         public void Start()
         {
@@ -51,19 +52,94 @@ namespace WSM.Client
         }
         private void StartJobs()
         {
-            IJobDetail job1 = JobBuilder.Create<WindowServiceJob>()
-                .WithIdentity("job1", "group1")
-                .Build();
+            foreach (var healthCheck in _appConfiguration.HealthChecks)
+            {
+                switch (healthCheck.Type)
+                {
 
-            ITrigger trigger1 = TriggerBuilder.Create()
-                .WithIdentity("trigger1", "group1")
-                .StartNow()
-                .WithSimpleSchedule(x => x
-                    .WithIntervalInMinutes(_quartzConfig.IntervalInMinute)
-                    .RepeatForever())
-                .Build();
+                    case HealthCheckType.HeartBeat:
+                        RegisterHeatbeatJob(healthCheck as HeartBeatHealthCheckDefinition);
+                        break;
 
-            scheduler.ScheduleJob(job1, trigger1).ConfigureAwait(false).GetAwaiter().GetResult();
+                    case HealthCheckType.Process:
+                        RegisterProcessJob(healthCheck as ProcessHealthCheckDefinition);
+                        break;
+
+                    case HealthCheckType.Port:
+                        RegisterPortJob(healthCheck as TcpPortHealthCheckDefinition);
+                        break;
+                    case HealthCheckType.DockerContainer:
+                        RegisterDockerContainerJob(healthCheck as DockerContainerHealthCheckDefinition);
+                        break;
+
+                }
+            }
         }
+
+        private void RegisterHeatbeatJob(HeartBeatHealthCheckDefinition healthCheck)
+        {
+            IJobDetail job = JobBuilder.Create<HeartbeatHealthCheckJob>()
+                      .WithIdentity("Heatbeat", "group1")
+                      .Build();
+            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
+
+            ITrigger trigger = TriggerBuilder.Create()
+           .StartNow()
+           .WithSimpleSchedule(x => x
+               .WithInterval(TimeSpan.FromSeconds(5))
+               .RepeatForever())
+           .Build();
+
+            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        private void RegisterProcessJob(ProcessHealthCheckDefinition healthCheck)
+        {
+            IJobDetail job = JobBuilder.Create<ProcessHealthCheckJob>()
+                      .WithIdentity($"Process Health Check {healthCheck.Name}", "group2")
+                      .Build();
+            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
+            ITrigger trigger = TriggerBuilder.Create()           
+           .StartNow()
+           .WithSimpleSchedule(x => x
+               .WithInterval(healthCheck.Interval)
+               .RepeatForever())
+           .Build();
+
+            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        private void RegisterPortJob(TcpPortHealthCheckDefinition healthCheck)
+        {
+            IJobDetail job = JobBuilder.Create<TcpPortHealthCheckJob>()
+                      .WithIdentity($"Port Health Check {healthCheck.Name}", "group2")
+                      .Build();
+            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
+            ITrigger trigger = TriggerBuilder.Create()
+           .StartNow()
+           .WithSimpleSchedule(x => x
+               .WithInterval(healthCheck.Interval)
+               .RepeatForever())
+           .Build();
+
+            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        private void RegisterDockerContainerJob(DockerContainerHealthCheckDefinition healthCheck)
+        {
+            IJobDetail job = JobBuilder.Create<DockerHealthCheckJob>()
+                      .WithIdentity($"Docker Container Health Check {healthCheck.Name}", "group2")
+                      .Build();
+            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
+            ITrigger trigger = TriggerBuilder.Create()
+           .StartNow()
+           .WithSimpleSchedule(x => x
+               .WithInterval(healthCheck.Interval)
+               .RepeatForever())
+           .Build();
+
+            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+        
     }
 }

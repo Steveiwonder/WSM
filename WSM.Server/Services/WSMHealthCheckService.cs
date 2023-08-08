@@ -1,28 +1,13 @@
-﻿using WSM.Server.Configuration;
-using WSM.Server.Dtos;
+﻿
+using WSM.Server.Configuration;
+using WSM.Server.Models;
+using WSM.Shared;
+using WSM.Shared.Dtos;
 
 namespace WSM.Server.Services
 {
     public class WSMHealthCheckService
     {
-        class HealthCheckStatus
-        {
-            public HealthCheck HealthCheck { get; init; }
-            public DateTime NextCheckInTime { get; private set; }
-            public DateTime? LastCheckInTime { get; private set; }
-
-            public void UpdateNextCheckInTime()
-            {
-                NextCheckInTime = DateTime.UtcNow.Add(HealthCheck.CheckInInterval);
-            }
-
-            public void UpdateLastCheckInTime(DateTime lastCheckIn)
-            {
-                LastCheckInTime = lastCheckIn;
-            }
-
-        }
-
         private readonly IEnumerable<HealthCheck> _healthChecks;
         private readonly ILogger<WSMHealthCheckService> _logger;
         private readonly Dictionary<string, HealthCheckStatus> _healthCheckStatus;
@@ -43,32 +28,28 @@ namespace WSM.Server.Services
         }
 
 
-        public void CheckIn(string healthCheckName)
+        public void CheckIn(HealthCheckReportDto healthCheckReport)
         {
-            if (!_healthCheckStatus.ContainsKey(healthCheckName))
+            if (!_healthCheckStatus.ContainsKey(healthCheckReport.Name))
             {
-                _logger.LogWarning($"Unknown health check name {healthCheckName}");
+                _logger.LogWarning($"Unknown health check name {healthCheckReport.Name}");
                 return;
             }
-            _logger.LogInformation($"Check in from {healthCheckName}");
-            var healthCheckStatus = _healthCheckStatus[healthCheckName]; 
+            _logger.LogInformation($"Check in from {healthCheckReport.Name}");
+            var healthCheckStatus = _healthCheckStatus[healthCheckReport.Name];
             healthCheckStatus.UpdateNextCheckInTime();
             healthCheckStatus.UpdateLastCheckInTime(DateTime.UtcNow);
-        }
-
-        public IEnumerable<HealthCheckStatusDto> GetStatus()
-        {
-            return _healthCheckStatus.Select(d =>
+            healthCheckStatus.UpdateStatus(healthCheckReport.Status);
+            if(healthCheckReport.Status != Constants.AvailableStatus)
             {
-
-                return new HealthCheckStatusDto()
-                {
-                    Name = d.Key,
-                    CheckInInterval = d.Value.HealthCheck.CheckInInterval,
-                    LastCheckInTime = d.Value.LastCheckInTime == null ? "never" : d.Value.LastCheckInTime.Value.ToString("u"),
-                    NextCheckInTime = d.Value.NextCheckInTime,
-                };
-            });
+                healthCheckStatus.IncrementBadStatusCount();
+            }
         }
+
+        internal IEnumerable<HealthCheckStatus> GetStatus()
+        {
+            return _healthCheckStatus.Values;
+        }
+
     }
 }

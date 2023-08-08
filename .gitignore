@@ -476,5 +476,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 /WSM.Client/appsettings.json
+/WSM.Client/appsettings.Development.json
 /WSM.Server/appsettings.json
 /WSM.Server/appsettings.Development.json
+/build

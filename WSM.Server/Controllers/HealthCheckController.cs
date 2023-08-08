@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WSM.Server.Dtos;
 using WSM.Server.Services;
+using WSM.Shared.Dtos;
 
 namespace WSM.Server.Controllers
 {
@@ -21,8 +21,7 @@ namespace WSM.Server.Controllers
         [HttpPost]
         public void Post(HealthCheckReportDto healthCheckReport)
         {
-
-            _healthCheckService.CheckIn(healthCheckReport.HealthCheckName);
+            _healthCheckService.CheckIn(healthCheckReport);
         }
 
         [HttpGet("status")]
