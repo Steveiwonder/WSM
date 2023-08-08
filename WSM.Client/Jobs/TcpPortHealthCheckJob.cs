@@ -13,7 +13,7 @@ namespace WSM.Client.Jobs
     [DisallowConcurrentExecution]
     public class TcpPortHealthCheckJob : HealthCheckJobBase
     {
-        
+
         private readonly ILogger<ProcessHealthCheckJob> _logger;
 
         public TcpPortHealthCheckJob(ILogger<ProcessHealthCheckJob> logger, WSMApiClient client) : base(client)
@@ -22,10 +22,17 @@ namespace WSM.Client.Jobs
         }
         public override async Task Execute(IJobExecutionContext context)
         {
-            var healthCheckDefinition = GetDefinition<TcpPortHealthCheckDefinition>(context);
-            string status = GetTcpStatus(healthCheckDefinition); 
+            try
+            {
+                var healthCheckDefinition = GetDefinition<TcpPortHealthCheckDefinition>(context);
+                string status = GetTcpStatus(healthCheckDefinition);
 
-            await CheckIn(healthCheckDefinition, status);
+                await CheckIn(healthCheckDefinition, status);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "");
+            }
         }
 
         private string GetTcpStatus(TcpPortHealthCheckDefinition definition)
@@ -39,9 +46,8 @@ namespace WSM.Client.Jobs
                 }
                 return Constants.AvailableStatus;
             }
-            catch (Exception)
+            catch
             {
-
 
             }
 

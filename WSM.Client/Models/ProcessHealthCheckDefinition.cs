@@ -2,7 +2,7 @@
 
 namespace WSM.Client.Models
 {
-    public class ProcessHealthCheckDefinition : IntervalHealthCheckDefinitionBase
+    public class ProcessHealthCheckDefinition : HealthCheckDefinitionBase
     {
         public string ProcessName { get; set; }
     }

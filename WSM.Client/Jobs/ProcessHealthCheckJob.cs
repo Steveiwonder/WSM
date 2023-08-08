@@ -21,9 +21,17 @@ namespace WSM.Client.Jobs
         }
         public override async Task Execute(IJobExecutionContext context)
         {
-            var healthCheckDefinition = GetDefinition<ProcessHealthCheckDefinition>(context);
-            var status = Process.GetProcessesByName(healthCheckDefinition.ProcessName).Length == 0 ? Constants.NotAvailableStatus : Constants.AvailableStatus;
-            await CheckIn(healthCheckDefinition, status);
+            try
+            {
+
+                var healthCheckDefinition = GetDefinition<ProcessHealthCheckDefinition>(context);
+                var status = Process.GetProcessesByName(healthCheckDefinition.ProcessName).Length == 0 ? Constants.NotAvailableStatus : Constants.AvailableStatus;
+                await CheckIn(healthCheckDefinition, status);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "");
+            }
         }
     }
 }

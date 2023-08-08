@@ -24,7 +24,18 @@ namespace WSM.Client.Jobs
 
         public async Task CheckIn(HealthCheckDefinitionBase healthCheckDefinition, string status = null)
         {
-            await _apiClient.CheckIn(healthCheckDefinition.Name, status ?? Constants.AvailableStatus);
+            var checkInSuccess = await _apiClient.CheckIn(healthCheckDefinition.Name, status ?? Constants.AvailableStatus);
+            if (!checkInSuccess)
+            {
+                await _apiClient.RegisterHealthCheck(new HealthCheckRegistrationDto()
+                {
+                    Name = healthCheckDefinition.Name,
+                    BadStatusLimit = healthCheckDefinition.BadStatusLimit,
+                    CheckInInterval = healthCheckDefinition.Interval,
+                    MissedCheckInLimit = healthCheckDefinition.MissedCheckInLimit
+                });
+            }
+
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Collections.Concurrent;
 using WSM.Server.Configuration;
 using WSM.Server.Models;
@@ -10,7 +11,7 @@ namespace WSM.Server.Services
 {
     public class WSMHealthCheckService
     {
-        private ConcurrentBag<HealthCheck> _healthChecks = new ConcurrentBag<HealthCheck>();
+        private ConcurrentDictionary<string, HealthCheck> _healthChecks = new ConcurrentDictionary<string, HealthCheck>();
         private ConcurrentDictionary<string, HealthCheckStatus> _healthCheckStatus = new ConcurrentDictionary<string, HealthCheckStatus>(StringComparer.OrdinalIgnoreCase);
         private readonly ILogger<WSMHealthCheckService> _logger;
         private readonly INotificationService _notificationService;
@@ -23,12 +24,12 @@ namespace WSM.Server.Services
         }
 
 
-        public void CheckIn(HealthCheckReportDto healthCheckReport)
+        public bool CheckIn(HealthCheckReportDto healthCheckReport)
         {
             if (!_healthCheckStatus.ContainsKey(healthCheckReport.Name))
             {
                 _logger.LogWarning($"Unknown health check name {healthCheckReport.Name}");
-                return;
+                return false;
             }
             _logger.LogInformation($"Check in from {healthCheckReport.Name}");
             var healthCheckStatus = _healthCheckStatus[healthCheckReport.Name];
@@ -39,6 +40,7 @@ namespace WSM.Server.Services
             {
                 healthCheckStatus.IncrementBadStatusCount();
             }
+            return true;
         }
 
         internal IEnumerable<HealthCheckStatus> GetStatus()
@@ -46,34 +48,40 @@ namespace WSM.Server.Services
             return _healthCheckStatus.Values;
         }
 
-        internal void Register(HealthCheckRegistrationsDto healthCheckRegistrations)
+        internal void Reregister(IEnumerable<HealthCheckRegistrationDto> registrations)
         {
             _healthChecks.Clear();
             _healthCheckStatus.Clear();
-            foreach (var registration in healthCheckRegistrations.Registrations)
+            foreach (var registration in registrations)
             {
-                var healthCheck = new HealthCheck()
-                {
-                    Name = registration.Name,
-                    CheckInInterval = registration.CheckInInterval,
-                    BadStatusLimit = registration.BadStatusLimit,
-                    MissedCheckInLimit = registration.MissedCheckInLimit
-                };
-
-                _healthChecks.Add(healthCheck);
-
-                _notificationService.SendNotificationAsync($"New Health Check Registration\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
+                Register(registration);
             }
 
-            foreach (var healthCheck in _healthChecks)
+        }
+        internal void Register(HealthCheckRegistrationDto registration)
+        {
+            _healthChecks.TryRemove(registration.Name, out _);
+            _healthCheckStatus.TryRemove(registration.Name, out _);
+
+            var healthCheck = new HealthCheck()
             {
-                var healthCheckStatus = new HealthCheckStatus()
-                {
-                    HealthCheck = healthCheck
-                };
-                healthCheckStatus.UpdateNextCheckInTime();
-                _healthCheckStatus.AddOrUpdate(healthCheck.Name, healthCheckStatus, (key, hc) => hc);
-            }
+                Name = registration.Name,
+                CheckInInterval = registration.CheckInInterval,
+                BadStatusLimit = registration.BadStatusLimit,
+                MissedCheckInLimit = registration.MissedCheckInLimit
+            };
+
+            var healthCheckStatus = new HealthCheckStatus()
+            {
+                HealthCheck = healthCheck
+            };
+            healthCheckStatus.UpdateNextCheckInTime();
+            _healthChecks.TryAdd(healthCheck.Name, healthCheck);
+            _healthCheckStatus.TryAdd(healthCheck.Name, healthCheckStatus);
+            _notificationService.SendNotificationAsync($"New Health Check Registration\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
+
         }
     }
+
+
 }

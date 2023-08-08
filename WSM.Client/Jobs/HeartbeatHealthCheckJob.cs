@@ -18,8 +18,15 @@ namespace WSM.Client.Jobs
         }
         public override async Task Execute(IJobExecutionContext context)
         {
-            var healthCheckDefinition = GetDefinition<HeartBeatHealthCheckDefinition>(context);
-            await CheckIn(healthCheckDefinition);
+            try
+            {
+                var healthCheckDefinition = GetDefinition<HeartBeatHealthCheckDefinition>(context);
+                await CheckIn(healthCheckDefinition);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "");
+            }
         }
     }
 }

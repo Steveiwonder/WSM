@@ -37,7 +37,6 @@ namespace WSM.Client
             _logger.LogInformation("Service Started");
             StartScheduler();
             StartJobs();
-            RegisterHealthChecks().Wait();
         }
         public void Stop()
         {
@@ -65,7 +64,7 @@ namespace WSM.Client
                 {
 
                     case HealthCheckType.HeartBeat:
-                        RegisterJob<HeartbeatHealthCheckJob>(healthCheck, TimeSpan.FromSeconds(5));
+                        RegisterJob<HeartbeatHealthCheckJob>(healthCheck, Constants.DefaultInterval);
                         break;
 
                     case HealthCheckType.Process:
@@ -83,42 +82,20 @@ namespace WSM.Client
                     case HealthCheckType.DiskSpace:
                         RegisterJob<DiskSpaceHealthCheckJob>(healthCheck, (healthCheck as DiskSpaceHealthCheckDefinition).Interval);
                         break;
+                 
 
                 }
             }
         }
 
-        private async Task RegisterHealthChecks()
-        {
-            var registrations = _appConfiguration.HealthChecks.Select(hc =>
-            {
-                TimeSpan interval;
-                IntervalHealthCheckDefinitionBase intervalHealthCheckDefinition = hc as IntervalHealthCheckDefinitionBase;
-                if (intervalHealthCheckDefinition != null)
-                {
-                    interval = intervalHealthCheckDefinition.Interval;
-                }
-                else
-                {
-                    interval = Constants.DefaultInterval;
-                }
-                return new HealthCheckRegistrationDto()
-                {
-                    Name = hc.Name,
-                    CheckInInterval = interval,
-                    BadStatusLimit = hc.BadStatusLimit,
-                    MissedCheckInLimit = hc.MissedCheckInLimit
-                };
-            });
 
-            await _client.RegisterHealthChecks(new HealthCheckRegistrationsDto()
-            {
-                Registrations = registrations
-            });
-        }
 
         private void RegisterJob<T>(HealthCheckDefinitionBase healthCheckDefinition, TimeSpan interval) where T : HealthCheckJobBase
         {
+            if (interval < TimeSpan.Zero)
+            {
+                interval = Constants.DefaultInterval;
+            }
             IJobDetail job = JobBuilder.Create<T>()
                       .WithIdentity(healthCheckDefinition.Name, "group1")
                       .Build();

@@ -2,7 +2,7 @@
 
 namespace WSM.Client.Models
 {
-    public class DiskSpaceHealthCheckDefinition : IntervalHealthCheckDefinitionBase
+    public class DiskSpaceHealthCheckDefinition : HealthCheckDefinitionBase
     {        
         public string DiskName { get; set; }
         public long MinimumFreeSpace { get; set; }
