@@ -24,7 +24,6 @@ namespace WSM.Server.Services
                 var password = _configuration.GetSection("Email:Password").Get<string>();
                 var from = _configuration.GetSection("Email:From").Get<string>();
                 var to = _configuration.GetSection("Email:To").Get<string>();
-                var enableSsl = _configuration.GetSection("Email:EnableSsl").Get<bool>();
 
                 var mimeMessage = new MimeMessage();
                 mimeMessage.From.Add(new MailboxAddress(from, from));
