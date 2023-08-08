@@ -26,6 +26,7 @@ namespace WSM.Client.Configuration
                             {"Process", typeof(ProcessHealthCheckDefinition) },
                             {"Port", typeof(TcpPortHealthCheckDefinition) },
                             {"DockerContainer", typeof(DockerContainerHealthCheckDefinition) },
+                            {"DiskSpace", typeof(DiskSpaceHealthCheckDefinition) },
                         }));
 
 

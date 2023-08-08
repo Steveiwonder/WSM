@@ -58,83 +58,40 @@ namespace WSM.Client
                 {
 
                     case HealthCheckType.HeartBeat:
-                        RegisterHeatbeatJob(healthCheck as HeartBeatHealthCheckDefinition);
+                        RegisterJob<HeartbeatHealthCheckJob>(healthCheck, TimeSpan.FromSeconds(5));
                         break;
 
                     case HealthCheckType.Process:
-                        RegisterProcessJob(healthCheck as ProcessHealthCheckDefinition);
+                        RegisterJob<ProcessHealthCheckJob>(healthCheck, (healthCheck as ProcessHealthCheckDefinition).Interval);
                         break;
 
                     case HealthCheckType.Port:
-                        RegisterPortJob(healthCheck as TcpPortHealthCheckDefinition);
+                        RegisterJob<TcpPortHealthCheckJob>(healthCheck, (healthCheck as TcpPortHealthCheckDefinition).Interval);
                         break;
+
                     case HealthCheckType.DockerContainer:
-                        RegisterDockerContainerJob(healthCheck as DockerContainerHealthCheckDefinition);
+                        RegisterJob<DockerHealthCheckJob>(healthCheck, (healthCheck as DockerContainerHealthCheckDefinition).Interval);
+                        break;
+
+                    case HealthCheckType.DiskSpace:
+                        RegisterJob<DiskSpaceHealthCheckJob>(healthCheck, (healthCheck as DiskSpaceHealthCheckDefinition).Interval);
                         break;
 
                 }
             }
         }
 
-        private void RegisterHeatbeatJob(HeartBeatHealthCheckDefinition healthCheck)
+        private void RegisterJob<T>(HealthCheckDefinitionBase healthCheckDefinition, TimeSpan interval) where T: HealthCheckJobBase
         {
-            IJobDetail job = JobBuilder.Create<HeartbeatHealthCheckJob>()
-                      .WithIdentity("Heatbeat", "group1")
+            IJobDetail job = JobBuilder.Create<T>()
+                      .WithIdentity(healthCheckDefinition.Name, "group1")
                       .Build();
-            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
+            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheckDefinition);
 
             ITrigger trigger = TriggerBuilder.Create()
            .StartNow()
            .WithSimpleSchedule(x => x
-               .WithInterval(TimeSpan.FromSeconds(5))
-               .RepeatForever())
-           .Build();
-
-            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        private void RegisterProcessJob(ProcessHealthCheckDefinition healthCheck)
-        {
-            IJobDetail job = JobBuilder.Create<ProcessHealthCheckJob>()
-                      .WithIdentity($"Process Health Check {healthCheck.Name}", "group2")
-                      .Build();
-            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
-            ITrigger trigger = TriggerBuilder.Create()           
-           .StartNow()
-           .WithSimpleSchedule(x => x
-               .WithInterval(healthCheck.Interval)
-               .RepeatForever())
-           .Build();
-
-            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        private void RegisterPortJob(TcpPortHealthCheckDefinition healthCheck)
-        {
-            IJobDetail job = JobBuilder.Create<TcpPortHealthCheckJob>()
-                      .WithIdentity($"Port Health Check {healthCheck.Name}", "group2")
-                      .Build();
-            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
-            ITrigger trigger = TriggerBuilder.Create()
-           .StartNow()
-           .WithSimpleSchedule(x => x
-               .WithInterval(healthCheck.Interval)
-               .RepeatForever())
-           .Build();
-
-            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        private void RegisterDockerContainerJob(DockerContainerHealthCheckDefinition healthCheck)
-        {
-            IJobDetail job = JobBuilder.Create<DockerHealthCheckJob>()
-                      .WithIdentity($"Docker Container Health Check {healthCheck.Name}", "group2")
-                      .Build();
-            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheck);
-            ITrigger trigger = TriggerBuilder.Create()
-           .StartNow()
-           .WithSimpleSchedule(x => x
-               .WithInterval(healthCheck.Interval)
+               .WithInterval(interval)
                .RepeatForever())
            .Build();
 

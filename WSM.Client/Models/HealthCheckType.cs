@@ -10,6 +10,7 @@ namespace WSM.Client.Models
         HeartBeat,
         Process,
         Port,
-        DockerContainer
+        DockerContainer,
+        DiskSpace
     }
 }
