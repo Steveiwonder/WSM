@@ -34,12 +34,7 @@ namespace WSM.Shared
                 return false;
             }
             return true;
-        }
-
-        public async Task ReregisterHealthChecks(IEnumerable<HealthCheckRegistrationDto> healthCheckRegistrations)
-        {
-            await Post(healthCheckRegistrations, "healthcheck/reregister");
-        }
+        }   
 
         public async Task RegisterHealthCheck(HealthCheckRegistrationDto healthCheckRegistration)
         {

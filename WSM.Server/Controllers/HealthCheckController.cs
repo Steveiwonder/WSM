@@ -21,6 +21,7 @@ namespace WSM.Server.Controllers
         [HttpPost("CheckIn")]
         public IActionResult CheckIn(HealthCheckReportDto healthCheckReport)
         {
+            
             if (!_healthCheckService.CheckIn(healthCheckReport))
             {
                 return NotFound();
@@ -32,14 +33,7 @@ namespace WSM.Server.Controllers
         public IActionResult Status()
         {
             return Ok(_healthCheckService.GetStatus());
-        }
-
-        [HttpPost("Reregister")]
-        public IActionResult Reregister(IEnumerable<HealthCheckRegistrationDto> healthCheckRegistrations)
-        {
-            _healthCheckService.Reregister(healthCheckRegistrations);
-            return Ok();
-        }
+        }       
 
         [HttpPost("Register")]
         public IActionResult Register(HealthCheckRegistrationDto healthCheckRegistration)

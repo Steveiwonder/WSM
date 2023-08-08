@@ -1,7 +1,4 @@
-﻿
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using WSM.Server.Configuration;
 using WSM.Server.Models;
 using WSM.Shared;
@@ -46,18 +43,7 @@ namespace WSM.Server.Services
         internal IEnumerable<HealthCheckStatus> GetStatus()
         {
             return _healthCheckStatus.Values;
-        }
-
-        internal void Reregister(IEnumerable<HealthCheckRegistrationDto> registrations)
-        {
-            _healthChecks.Clear();
-            _healthCheckStatus.Clear();
-            foreach (var registration in registrations)
-            {
-                Register(registration);
-            }
-
-        }
+        }     
         internal void Register(HealthCheckRegistrationDto registration)
         {
             _healthChecks.TryRemove(registration.Name, out _);
