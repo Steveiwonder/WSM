@@ -42,7 +42,20 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-builder.Services.AddSingleton<INotificationService, WhatsAppNotificationServicerService>();
+var notificationType = builder.Configuration.GetSection("NotificationType").Get<string>();
+
+if ("whatsapp".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddSingleton<INotificationService, WhatsAppNotificationService>();
+}
+else if ("email".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddSingleton<INotificationService, EmailNotificationService>();
+}
+else
+{
+    builder.Services.AddSingleton<INotificationService, NullNotificationService>();
+}
 builder.Services.AddHostedService<WSMHealthCheckBackgroundService>();
 builder.Services.AddSingleton<WSMHealthCheckService>();
 builder.Services.AddAuthentication(ApplicationIdAuthenticationOptions.DefaultScheme)

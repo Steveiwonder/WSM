@@ -3,6 +3,6 @@
     public interface INotificationService
     {
 
-        Task SendNotificationAsync(string message);
+        Task SendNotificationAsync(string title, string message);
     }
 }

@@ -84,7 +84,7 @@ namespace WSM.Server.BackgroundServices
             if (!hasMissedCheckIn && healthCheckStatus.MissedCheckInCount != 0)
             {
                 healthCheckStatus.ResetMissedCheckInCount();
-                _notificationService.SendNotificationAsync($"{healthCheckStatus.Name} has checked in");
+                _notificationService.SendNotificationAsync($"Checked In {healthCheckStatus.Name}", $"{healthCheckStatus.Name} has checked in");
             }
 
             return hasMissedCheckIn;
@@ -97,7 +97,7 @@ namespace WSM.Server.BackgroundServices
             if (!hasBadStatus && healthCheckStatus.BadStatusCount != 0)
             {
                 healthCheckStatus.ResetBadStatusCount();
-                _notificationService.SendNotificationAsync($"{healthCheckStatus.Name} is now OK");
+                _notificationService.SendNotificationAsync($"Status OK {healthCheckStatus.Name}", $"{healthCheckStatus.Name} is now OK");
 
             }
 
@@ -130,7 +130,7 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} hasn't checked in, last check in time was {(healthCheckStatus.LastCheckInTime == null ? "never" : healthCheckStatus.LastCheckInTime.ToString())}";
             _logger.LogWarning(msg);
 
-            _notificationService.SendNotificationAsync(msg);
+            _notificationService.SendNotificationAsync("Missed Check In", msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastMissedCheckInAlertSent();
         }
@@ -145,7 +145,7 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} reported a bad status, '{healthCheckStatus.LastStatus}', reported {healthCheckStatus.BadStatusCount} times";
             _logger.LogWarning(msg);
 
-            _notificationService.SendNotificationAsync(msg);
+            _notificationService.SendNotificationAsync("Bad Status Report", msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastBadCheckInAlertSent();
         }

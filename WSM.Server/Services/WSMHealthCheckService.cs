@@ -97,7 +97,7 @@ namespace WSM.Server.Services
             };
             healthCheckStatus.UpdateNextCheckInTime();
             server.TryAddHealthCheck(healthCheck.Name, healthCheckStatus);
-            _notificationService.SendNotificationAsync($"New Health Check Registration\r\nServer: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
+            _notificationService.SendNotificationAsync("New Health Check Registration", $"Server: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
 
         }
     }

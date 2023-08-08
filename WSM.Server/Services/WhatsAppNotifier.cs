@@ -4,14 +4,14 @@ using Twilio.Rest.Api.V2010.Account;
 
 namespace WSM.Server.Services
 {
-    public class WhatsAppNotificationServicerService : INotificationService
+    public class WhatsAppNotificationService : INotificationService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<WhatsAppNotificationServicerService> _logger;
+        private readonly ILogger<WhatsAppNotificationService> _logger;
         private readonly string _from;
         private readonly string _to;
 
-        public WhatsAppNotificationServicerService(IConfiguration configuration, ILogger<WhatsAppNotificationServicerService> logger)
+        public WhatsAppNotificationService(IConfiguration configuration, ILogger<WhatsAppNotificationService> logger)
         {
             _configuration = configuration;
             _logger = logger;
@@ -22,18 +22,18 @@ namespace WSM.Server.Services
             TwilioClient.Init(accountSid, authToken);
         }
 
-        public async Task SendNotificationAsync(string message)
+        public async Task SendNotificationAsync(string title, string message)
         {
             try
             {
                 message = message.Replace("\r\n", "\n");
                 var messageOptions = new CreateMessageOptions(new PhoneNumber(_to));
                 messageOptions.From = new PhoneNumber(_from);
-                messageOptions.Body = message;
+                messageOptions.Body = $"{title}\n{message}";
 
                 await MessageResource.CreateAsync(messageOptions);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending notification");
             }
