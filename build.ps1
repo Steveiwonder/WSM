@@ -1,4 +1,7 @@
 Write-Host "Building WSM.Server"
+Write-Host "ENV BEGIN"
+gci env:* | sort-object name
+Write-Host "ENV END"
 docker build -t steveiwonder/wsm.server --no-cache --progress=plain -f dockerfile.server .
 Write-Host "Publishing WSM.Client"
 dotnet publish "./WSM.Client/WSM.Client.csproj" -o ./build/wsm.client/ -c Debug
