@@ -11,8 +11,12 @@ WSM is a service for monitoring different aspects of a Windows server and alerti
 - TCP Port Connectivity, checks if a port is open using a TcpClient
 
 ### Why?
-I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to setup but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
+I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to set up but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
 
+### Who is it for?
+Anyone. I wouldn't suggest running this in a large enterprise environment with system-critical infrastructure even though you technically could. It's designed for use with home labs and _maybe_ small businesses.
+
+### The Software
 WSM is split into two main components, the server and the client(s).
 #### Client (Windows Service)
 The client is responsible for running all of the configured health checks and reporting their state to the server
@@ -24,13 +28,13 @@ There are two different types of triggers for alerts
 - Bad Status Reported
 
 #### Missed Check In
-This can occur when the configured health check doesn't report to the server within the defined amount of time
+This can occur when the configured health check doesn't report to the server within the defined interval
 
 #### Bad Status Reported
-By default, all health checks should report a state of "Available" to the server, any other state will trigger the alert to be sent with an invalid state
+By default, all health checks should report a state of "Available" to the server, any other state will be considered bad and will trigger alerts.
 
 # Installation
-WSM is designed to run on two separate servers. An example is having a very cheap cloud-based VM that you can run wsm.server on and the client on your home server.
+WSM is designed to run on two separate servers. An example is having a very cheap cloud-based VM that you can run `wsm.server` on and the client on your home server.
 
 ## Server
 There are two steps for installing the server
@@ -258,3 +262,6 @@ And that's it, you're done. If you have a notifier configured, you'll see notifi
 1. Add HTTPS support
 2. Add more health check types
 3. ???
+
+### What if a health check type isn't supported?
+Ask, and I'll see if I can accommodate or create a PR. I will add a guide for writing your own health checks soon.
