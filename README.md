@@ -145,7 +145,7 @@ There are three steps for installing the server
 3. Install the Windows service
 
 ### Extracting the release
-Grab the latest copy of the [client](https://github.com/Steveiwonder/WSM/releases/download/latest/wsm.client.zip) and extract it to a location you want to run the Windows Service from
+Grab the latest copy of the [wsm.client.zip](https://github.com/Steveiwonder/WSM/releases/latest) and extract it to a location you want to run the Windows Service from
 `C:\wsm.server\` is where I have it.
 
 ### Creating appsettings.json
