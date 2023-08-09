@@ -1,8 +1,6 @@
 Write-Host "Building WSM.Server"
-Write-Host "ENV BEGIN"
-gci env:* | sort-object name
-Write-Host "ENV END"
-docker build -t steveiwonder/wsm.server --no-cache --progress=plain -f dockerfile.server .
+$verison = $args[0]
+docker build -t steveiwonder/wsm.server:$version -t steveiwonder/wsm.server:latest --no-cache --progress=plain -f dockerfile.server .
 Write-Host "Publishing WSM.Client"
 dotnet publish "./WSM.Client/WSM.Client.csproj" -o ./build/wsm.client/ -c Debug
 Write-Host "Removing client appsettings.json"
