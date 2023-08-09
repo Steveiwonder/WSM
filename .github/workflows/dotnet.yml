@@ -36,7 +36,8 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         push: true
-        tags: steveiwonder/wsm.server:${{ env.VERSION_NUMBER }}   
+        tags: steveiwonder/wsm.server:${{ env.VERSION_NUMBER }},steveiwonder/wsm.server:latest
+        file: dockerfile.server
     # - name: Create release
     #   id: create_release
     #   uses: actions/create-release@v1
