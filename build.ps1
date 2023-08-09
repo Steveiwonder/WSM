@@ -1,4 +1,5 @@
 Write-Host "Building WSM.Server"
+gci env:* | sort-object name
 $verison = $args[0]
 Write-Host "Version number $version"
 docker build -t steveiwonder/wsm.server:$version -t steveiwonder/wsm.server:latest --no-cache --progress=plain -f dockerfile.server .
