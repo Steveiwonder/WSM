@@ -4,11 +4,7 @@
 WSM is a service for monitoring different aspects of a Windows server and alerting when certain conditions are met.
 
 ### What can WSM monitor?
-- Heartbeat, this is a general heartbeat that the client must send at a set interval. This could be used to determine if the server has gone down
-- Disk Space, check for a minimum amount of required free space before alerting
-- Docker Containers, checks for a "running" state of a docker container
-- Running Processes, checks for at least one instance of the given process name
-- TCP Port Connectivity, checks if a port is open using a TcpClient
+See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space for now.
 
 ### Why?
 I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to set up but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
