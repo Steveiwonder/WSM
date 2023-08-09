@@ -43,8 +43,8 @@ jobs:
       
     - name: Copy Service Scripts
       run: | 
-        cp ./WSM.Client/install-services.ps1 ./build/wsm.client/install-service.ps1
-        cp ./WSM.Client/uninstall-services.ps1 ./build/wsm.client/uninstall-service.ps1
+        cp ./WSM.Client/install-service.ps1 ./build/wsm.client/install-service.ps1
+        cp ./WSM.Client/uninstall-service.ps1 ./build/wsm.client/uninstall-service.ps1
     - name: Create wsm.client.zip
       run: zip -r ./build/wsm.client.zip ./build/wsm.client
     # - name: Create release
