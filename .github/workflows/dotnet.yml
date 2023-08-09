@@ -11,6 +11,8 @@ on:
 
 jobs:
   build:
+    env:
+      VERSION_NUMBER: '1.0.${{github.run_number}}'
     permissions: write-all
     runs-on: windows-latest
 
@@ -30,8 +32,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
-        tag_name: latest
-        release_name: Release latest
+        tag_name: $VERSION_NUMBER
+        release_name: Release $VERSION_NUMBER
         body: |
           Changes in this Release
         draft: true
