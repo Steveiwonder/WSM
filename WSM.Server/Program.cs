@@ -16,12 +16,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("ApplicationId", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
+    options.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
     {
         Name = "Authorization",
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        BearerFormat = "ApplicationId",
-        Scheme = "ApplicationId",
+        BearerFormat = "ApiKey",
+        Scheme = "ApiKey",
         In = ParameterLocation.Header,
 
 
@@ -35,7 +35,7 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type=ReferenceType.SecurityScheme,
-                    Id="ApplicationId"
+                    Id="ApiKey"
                 }
             },
             new string[]{}
@@ -58,8 +58,8 @@ else
 }
 builder.Services.AddHostedService<WSMHealthCheckBackgroundService>();
 builder.Services.AddSingleton<WSMHealthCheckService>();
-builder.Services.AddAuthentication(ApplicationIdAuthenticationOptions.DefaultScheme)
-    .AddScheme<ApplicationIdAuthenticationOptions, ApplicationIdAuthenticationHandler>(ApplicationIdAuthenticationOptions.DefaultScheme, options =>
+builder.Services.AddAuthentication(ApiKeyAuthenticationOptions.DefaultScheme)
+    .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationOptions.DefaultScheme, options =>
     {
 
     });

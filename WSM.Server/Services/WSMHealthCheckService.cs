@@ -32,27 +32,28 @@ namespace WSM.Server.Services
 
         private RegisteredServer GetServer()
         {
-            var applicationId = ClaimsPrincipal.FindFirstValue(ClaimConstants.ApiKey);
+            var apiKey = ClaimsPrincipal.FindFirstValue(ClaimConstants.ApiKey);
             var serverName = ClaimsPrincipal.FindFirstValue(ClaimConstants.ServerName);
-            if (!_servers.ContainsKey(applicationId))
+            if (!_servers.ContainsKey(apiKey))
             {
                 var server = new RegisteredServer(serverName);
-                _servers.TryAdd(applicationId, server);
+                _servers.TryAdd(apiKey, server);
                 return server;
             }
-            return _servers[applicationId];
+            return _servers[apiKey];
         }
 
 
         public bool CheckIn(HealthCheckReportDto healthCheckReport)
         {
             var server = GetServer();
+            _logger.LogInformation($"CheckIn from {server.Name}.{healthCheckReport.Name}");
             if (!server.ContainsHealthCheck(healthCheckReport.Name))
             {
-                _logger.LogWarning($"Unknown health check name {healthCheckReport.Name}");
+                _logger.LogWarning($"Unknown health check name {server.Name}.{healthCheckReport.Name}");
                 return false;
             }
-            _logger.LogInformation($"Check in from {healthCheckReport.Name}");
+            _logger.LogInformation($"Check in from {server.Name}.{healthCheckReport.Name}");
             var healthCheckStatus = server.GetHealthCheckStatus(healthCheckReport.Name);
             healthCheckStatus.UpdateNextCheckInTime();
             healthCheckStatus.UpdateLastCheckInTime(DateTime.UtcNow);
@@ -81,8 +82,8 @@ namespace WSM.Server.Services
         {
             var server = GetServer();
 
+            _logger.LogInformation($"Registering new health {server.Name}.{registration.Name}");
             server.TryRemoveHealthCheck(registration.Name, out _);
-
             var healthCheck = new HealthCheck()
             {
                 Name = registration.Name,
@@ -99,6 +100,13 @@ namespace WSM.Server.Services
             server.TryAddHealthCheck(healthCheck.Name, healthCheckStatus);
             _notificationService.SendNotificationAsync("New Health Check Registration", $"Server: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
 
+        }
+
+        internal void ClearHealthChecks()
+        {
+            var server = GetServer();
+            _logger.LogInformation($"Clearing health checks for {server.Name}, {server.HealthChecks.Count} will be removed");
+            server.HealthChecks.Clear();
         }
     }
 

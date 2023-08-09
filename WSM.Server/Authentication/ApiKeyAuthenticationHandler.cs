@@ -6,13 +6,13 @@ using WSM.Server.Configuration;
 
 namespace WSM.Server.Authentication
 {
-    public class ApplicationIdAuthenticationHandler :
-    AuthenticationHandler<ApplicationIdAuthenticationOptions>
+    public class ApiKeyAuthenticationHandler :
+    AuthenticationHandler<ApiKeyAuthenticationOptions>
     {
         private readonly IEnumerable<ServerConfiguration> _servers;
 
-        public ApplicationIdAuthenticationHandler
-            (IOptionsMonitor<ApplicationIdAuthenticationOptions> options,
+        public ApiKeyAuthenticationHandler
+            (IOptionsMonitor<ApiKeyAuthenticationOptions> options,
             ILoggerFactory logger, UrlEncoder encoder,
             ISystemClock clock,
             IEnumerable<ServerConfiguration> servers)
@@ -23,13 +23,12 @@ namespace WSM.Server.Authentication
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (!Request.Headers
-                .ContainsKey(Options.TokenHeaderName))
+                .ContainsKey(Options.ApiKeyHeaderName))
             {
-                return AuthenticateResult.Fail($"Missing header: {Options.TokenHeaderName}");
+                return AuthenticateResult.Fail($"Missing header: {Options.ApiKeyHeaderName}");
             }
 
-            string apiKey = Request
-                .Headers[Options.TokenHeaderName]!;
+            string apiKey = TryGetApiKey();
 
             var server = _servers.FirstOrDefault(d => d.ApiKey == apiKey);
             if (server == null)
@@ -51,6 +50,18 @@ namespace WSM.Server.Authentication
             return AuthenticateResult.Success
                 (new AuthenticationTicket(claimsPrincipal,
                 Scheme.Name));
+        }
+
+        private string TryGetApiKey()
+        {
+            string apiKey = Request.Headers[Options.ApiKeyHeaderName]!;
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                return apiKey;
+            }
+            apiKey = Request.Query[Options.ApiKeyQueryStringName];
+
+            return apiKey;
         }
     }
 }

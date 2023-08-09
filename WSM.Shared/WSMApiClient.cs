@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using WSM.Shared.Dtos;
@@ -34,22 +35,41 @@ namespace WSM.Shared
                 return false;
             }
             return true;
-        }   
+        }
 
         public async Task RegisterHealthCheck(HealthCheckRegistrationDto healthCheckRegistration)
         {
             await Post(healthCheckRegistration, "healthcheck/register");
         }
 
-        private async Task<HttpStatusCode> Post(object any, string path)
+        public async Task ClearHealthChecks()
         {
-            var uri = BuildUri(path);
-            var content = JsonContent.Create(any);
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-            requestMessage.Content = content;
-            requestMessage.Headers.Add("Authorization", _apiKey);
+            await Delete("healthcheck/clear");
+        }
+
+        private async Task<HttpStatusCode> Delete(string path)
+        {
+            var requestMessage = CreateHttpRequestMessage(HttpMethod.Delete, path);
             HttpResponseMessage httpResponse = await _httpClient.SendAsync(requestMessage);
             return httpResponse.StatusCode;
+        }
+
+        private async Task<HttpStatusCode> Post(object any, string path)
+        {
+            var requestMessage = CreateHttpRequestMessage(HttpMethod.Post, path);
+
+            var content = JsonContent.Create(any);
+            requestMessage.Content = content;
+            HttpResponseMessage httpResponse = await _httpClient.SendAsync(requestMessage);
+            return httpResponse.StatusCode;
+        }
+
+        private HttpRequestMessage CreateHttpRequestMessage(HttpMethod method, string path)
+        {
+            string uri = BuildUri(path);
+            var requestMessage = new HttpRequestMessage(method, uri);
+            requestMessage.Headers.Add("Authorization", _apiKey);
+            return requestMessage;
         }
 
         private string BuildUri(string path)
