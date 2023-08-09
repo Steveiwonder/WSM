@@ -10,14 +10,15 @@ WSM is a service for monitoring different aspects of a Windows server and alerti
 - Running Processes, checks for at least one instance of the given process name
 - TCP Port Connectivity, checks if a port is open using a TcpClient
 
-### How does it work?
-WSM is split into two components the server and the client.
+### Why?
+I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to setup but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
 
+WSM is split into two main components, the server and the client(s).
 #### Client (Windows Service)
 The client is responsible for running all of the configured health checks and reporting their state to the server
 
 #### Server (Docker Container)
-The server is responsible for keeping track of all health checks and ensuring they report a good status and at regular intervals. If the service detects any issues then alerts can be sent.
+The server is responsible for keeping track of all health checks and ensuring they report a good status at regular intervals. If the service detects any issues then alerts can be sent.
 There are two different types of triggers for alerts
 - Missed Check In
 - Bad Status Reported
@@ -29,7 +30,7 @@ This can occur when the configured health check doesn't report to the server wit
 By default, all health checks should report a state of "Available" to the server, any other state will trigger the alert to be sent with an invalid state
 
 # Installation
-WSM is designed to run on two separate servers, a good example is having a very cheap cloud-based VM that you can run the server on, the run the client on your home lab/server.
+WSM is designed to run on two separate servers. An example is having a very cheap cloud-based VM that you can run wsm.server on and the client on your home server.
 
 ## Server
 There are two steps for installing the server
