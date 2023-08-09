@@ -26,7 +26,7 @@ jobs:
     - name: Build
       shell: pwsh
       run: |
-        ".\build.ps1" ""$Env:VERSION_NUMBER""
+        ".\build.ps1" "'$Env:VERSION_NUMBER'"
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
