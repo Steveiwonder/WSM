@@ -23,12 +23,19 @@ namespace WSM.Client.Jobs
         {
             try
             {
-
                 var healthCheckDefinition = GetDefinition<ProcessHealthCheckDefinition>(context);
-                var status = Process.GetProcessesByName(healthCheckDefinition.ProcessName).Length == 0 ? Constants.NotAvailableStatus : Constants.AvailableStatus;
+                var minCount = Math.Max(1, healthCheckDefinition.MinCount ?? 1);
+                var maxCount = healthCheckDefinition.MaxCount;
+                var processCount = Process.GetProcessesByName(healthCheckDefinition.ProcessName).Length;
+                string status = Constants.AvailableStatus;
+                if (processCount < minCount || maxCount != null && processCount > maxCount)
+                {
+                    status = $"Found {processCount}, expected between {minCount} - {(maxCount == null ? "No Maximum" : maxCount)}";
+                }
+                
                 await CheckIn(healthCheckDefinition, status);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "");
             }
