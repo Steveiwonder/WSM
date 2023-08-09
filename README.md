@@ -7,10 +7,10 @@ WSM is a service for monitoring different aspects of a Windows server and alerti
 See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space for now.
 
 ### Why?
-I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to set up but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
+I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and inevitably something would eventually fail, I wouldn't usually find this out until someone using one of the services let me know. I wanted a tool that was free and easy to set up but couldn't find one that did everything I wanted, also I like coding so I figured it was a good candidate for a project, 3 days later WSM was born.
 
 ### Who is it for?
-Anyone. I wouldn't suggest running this in a large enterprise environment with system-critical infrastructure even though you technically could. It's designed for use with home labs and _maybe_ small businesses.
+Anyone. I wouldn't suggest running this in a large enterprise environment with system-critical infrastructure even though you technically could and it would be fine. It's designed for use with home labs and _maybe_ small businesses.
 
 ### The Software
 WSM is split into two main components, the server and the client(s).
