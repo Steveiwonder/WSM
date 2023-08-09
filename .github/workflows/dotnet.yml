@@ -15,7 +15,7 @@ jobs:
     env:
       VERSION_NUMBER: '1.0.${{github.run_number}}'
     permissions: write-all
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -37,31 +37,31 @@ jobs:
       with:
         push: true
         tags: steveiwonder/wsm.server:${{ env.VERSION_NUMBER }}   
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: ${{ env.VERSION_NUMBER }}
-        release_name: "Release ${{ env.VERSION_NUMBER }}"
-        body: |
-          Changes in this Release
-        draft: true
-        prerelease: false
-    - name: Upload release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/wsm.client.zip
-        asset_name: wsm.client.zip
-        asset_content_type: application/zip
-    - name: Publish release
-      uses: StuYarrow/publish-release@v1.1.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        id: ${{ steps.create_release.outputs.id }}        
+    # - name: Create release
+    #   id: create_release
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+    #   with:
+    #     tag_name: ${{ env.VERSION_NUMBER }}
+    #     release_name: "Release ${{ env.VERSION_NUMBER }}"
+    #     body: |
+    #       Changes in this Release
+    #     draft: true
+    #     prerelease: false
+    # - name: Upload release asset
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: ./build/wsm.client.zip
+    #     asset_name: wsm.client.zip
+    #     asset_content_type: application/zip
+    # - name: Publish release
+    #   uses: StuYarrow/publish-release@v1.1.2
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     id: ${{ steps.create_release.outputs.id }}        
 
