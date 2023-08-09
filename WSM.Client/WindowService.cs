@@ -35,6 +35,15 @@ namespace WSM.Client
         public void Start()
         {
             _logger.LogInformation("Service Started");
+            try
+            {
+
+                _client.ClearHealthChecks().Wait();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Unable to clear health checks");
+            }
             StartScheduler();
             StartJobs();
         }
