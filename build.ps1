@@ -1,5 +1,6 @@
 Write-Host "Building WSM.Server"
 $verison = $args[0]
+Write-Host "Version number $version"
 docker build -t steveiwonder/wsm.server:$version -t steveiwonder/wsm.server:latest --no-cache --progress=plain -f dockerfile.server .
 Write-Host "Publishing WSM.Client"
 dotnet publish "./WSM.Client/WSM.Client.csproj" -o ./build/wsm.client/ -c Debug
