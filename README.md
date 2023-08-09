@@ -134,7 +134,126 @@ Running the container
 `docker run -d -p 80:80 -v /app/appsettings.json:/app/appsettings.json --name wsm.server --restart unless-stopped  steveiwonder/wsm.server`
 
 ## Client
+There are three steps for installing the server
+1. Extracting the release zip
+2. Create an appsettings.json file
+3. Install the Windows service
+
+### Extracting the release
+Grab the latest copy of the [client](https://github.com/Steveiwonder/WSM/releases/download/latest/wsm.client.zip) and extract it to a location you want to run the Windows Service from
+`C:\wsm.server\` is where I have it.
+
+### Creating appsettings.json
+Add an `appsettings.json` just inside `C:\wsm.server\` here is an example of the `appsettings.json`
+```json
+{
+  "ServiceConfig": {
+    "ServiceName": "WSM",
+    "DisplayName": "Windows Server Monitor",
+    "Description": "Windows Server Monitor, for monitoring services!"
+  },
+  "App": {
+    "Server": {
+      "Url": "https://localhost:7180",
+      "ApiKey": "YOUR_API_KEY"
+    },
+    "HealthChecks": [
+      {
+        "Name": "ServerHeartBeat",
+        "Type": "Heartbeat",
+        "Interval": "00:00:02"
+      }      
+    ]
+  }
+}
+```
+Here is where you'll define everything you want to monitor, let's go through what all the config means.
+Everything within the `ServiceConfig` section is there for the Windows service, feel free to change this but the default is fine.
+Everything within `App` section is the app's configuration, and you will need to change it.
+`Server` - Here you need to configure both the `Url` of where the `wsm.server` docker image is hosted and the `ApiKey` that identifies this client
+`HealthChecks` - This is everything you want to monitor
+Every health check will have at least these values, each health check may have additional configuration.
+- `Name` (Required) - The name of this health check, must be unique
+- `Type` (Required) - The type of health check see [Health Check Types](#health-check-types) for more detail
+- `Interval` (Optional) - The frequency at which this health check should run and is defined as `hh:mm:ss`. This is optional and defaults to `00:00:05` (5s)
+- `MissedCheckInLimit` (Optional) - The number of allowed missed check-ins before alerts are triggered, the default is 2.
+- `BadStatusLimit` (Optional) -The number of allowed bad status reports before alerts are triggered, the default is 2.
+
+## Health Check Types
+
+### Disk Space
+Checks free space on a given disk
+```json
+{
+  "Name": "C Disk Space",
+  "Type": "DiskSpace",
+  "Interval": "00:05:00"
+  "DiskName": "C:\\",
+  "MinimumFreeSpace": 16106127360,
+}
+```
+- `DiskName` (Required) - The disk name you want to monitor
+- `MinimumFreeSpace` (Required) - The minimum number of free bytes you want to maintain before alerts are sent.
+
+### Docker Container
+Checks a given docker container to ensure it has a "running" state
+```json
+{
+  "Name": "Docker Cloudflare DNS",
+  "Type": "DockerContainer",
+  "Interval": "00:01:00"
+  "ContainerName":"dns",
+}
+```
+- `ContainerName` (Required) - The docker container name you want to monitor
+
+### Heartbeat
+A simple ping from client to server, to let the server know it's still online, only one of these can be configured
+```json
+{
+  "Name": "ServerHeartBeat",
+  "Type": "Heartbeat",
+  "Interval": "00:00:05"
+},
+```
+
+### Port (TCP Only)
+Attempts to connect to a given TCP port to see if something is listening
+```json
+{
+  "Name": "Web Server",
+  "Type": "Port",
+  "Interval": "00:01:00"
+  "Port": 443,
+  "Host": "google.com",
+}
+```
+- `Port` (Required) - The port number to connect to
+- `Host` (Optional) - The host you want to connect to, the default is `localhost`
+
+### Process
+Checks for the existence of the given process
+```json
+{
+  "Name": "PostgreSQL",
+  "Type": "Process",
+  "Interval": "00:01:00",
+  "ProcessName": "postgres",
+  "MinCount": 1,
+  "MaxCount": 1
+}
+```
+- `ProcessName` (Required) - The name of the process to monitor without `.exe`
+- `MinCount` (Optional) - The minimum number of instances, defaults to 1
+- `MaxCount` (Optional) - The maximum number of instances. If not specified, there is no limit
+
+### Installing the Windows service
+Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start the service
+
+And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
 
 
-
-
+### What's next for WSM?
+1. Add HTTPS support
+2. Add more health check types
+3. ???
