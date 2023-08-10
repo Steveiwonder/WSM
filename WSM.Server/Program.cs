@@ -1,6 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using System.Security.Claims;
 using WSM.Server.Authentication;
 using WSM.Server.BackgroundServices;
 using WSM.Server.Configuration;
@@ -16,15 +14,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
+    options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme()
     {
         Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Type = SecuritySchemeType.ApiKey,
         BearerFormat = "ApiKey",
         Scheme = "ApiKey",
         In = ParameterLocation.Header,
-
-
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -38,7 +34,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id="ApiKey"
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
