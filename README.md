@@ -253,11 +253,13 @@ Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start t
 
 And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
 
+### Wait, what, no HTTPS?
+
+Put nginx in front of it and proxy to 443->80 on the docker image
 
 ### What's next for WSM?
-1. Add HTTPS support
-2. Add more health check types
-3. ???
+1. Add more health check types
+2. ???
 
 ### What if a health check type isn't supported?
 Ask, and I'll see if I can accommodate or create a PR. I will add a guide for writing your own health checks soon.
