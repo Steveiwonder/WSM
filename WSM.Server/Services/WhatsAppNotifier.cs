@@ -31,8 +31,7 @@ namespace WSM.Server.Services
                 messageOptions.From = new PhoneNumber(_from);
                 messageOptions.Body = $"{title}\n{message}";
 
-               var resource =  await MessageResource.CreateAsync(messageOptions);
-                if(resource != null) { }
+                await MessageResource.CreateAsync(messageOptions);
             }
             catch (Exception ex)
             {
