@@ -57,7 +57,7 @@ Here is an example `appsettings.json`
       "Name": "Home Lab"
     }
   ],
-  "NotificationType": "Email",
+  "NotificationTypes": ["Email", "Twilio"],
   "Email": {
     "Host": "",
     "Username": "",
@@ -65,7 +65,6 @@ Here is an example `appsettings.json`
     "Port": 587,
     "From": "",
     "To": ""
-
   },
   "Twilio": {
     "AccountId": "",
@@ -113,10 +112,13 @@ authentication between client and server, keep it secret, keep it safe 😜.
   ],
 ```
 
-`NotificationType` is the type of notification you want, the two supported values are `Email` and `WhatsApp`.  If using `Email` you must fill in the `Email` configuration. 
-If you use `WhatsApp` then you must supply the `Twilio` configuration.
+`NotificationTypes` can be used to configure 0 or more notification types you'd like to send. 
 
-`Email` is only used when `NotificationType` is set to `Email`
+Supported values:
+- Email
+- Twilio
+
+`Email` - Send email notifications
 - `Host` the host of the email server
 - `Port` the port of the email server
 - `Username` the username to authenticate with
@@ -124,11 +126,11 @@ If you use `WhatsApp` then you must supply the `Twilio` configuration.
 - `From` the email address the email should come from
 - `To` the email address the email should be sent to
 
-`WhatsApp` is only used when `NotificationType` is set to `WhatsApp` - This could also be used to send SMS, but it's untested
+`Twilio` - This can be used to send SMS or WhatsApp messages via Twilio
 - `AccountId` your Twilio Account Id - available within Twilio console https://console.twilio.com
 - `AuthToken` your Twilio Auth Token - available within Twilio console https://console.twilio.com
-- `From` your Twilio phone number that the message should be sent from. For WhatsApp it's in the format of `whatsapp:+1555555555555`
-- `To` is the number the message should be sent to. For WhatsApp it's in the format of `whatsapp:+1555555555555`
+- `From` your Twilio phone number that the message should be sent from. For WhatsApp it's in the format of `whatsapp:+1555555555555` for SMS it'll be `+1555555555555`
+- `To` is the number the message should be sent to. For WhatsApp it's in the format of `whatsapp:+1555555555555` for SMS it'll be `+1555555555555`
 
 Running the container
 

@@ -3,6 +3,7 @@ using WSM.Server.Authentication;
 using WSM.Server.BackgroundServices;
 using WSM.Server.Configuration;
 using WSM.Server.Services;
+using WSM.Server.Services.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,20 +39,23 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-var notificationType = builder.Configuration.GetSection("NotificationType").Get<string>();
+var notificationTypes = builder.Configuration.GetSection("NotificationTypes").Get<string[]>();
 
-if ("whatsapp".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
+if (notificationTypes != null)
 {
-    builder.Services.AddSingleton<INotificationService, WhatsAppNotificationService>();
+    foreach (var notificationType in notificationTypes)
+    {
+        if ("twilio".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
+        {
+            builder.Services.AddSingleton<INotificationService, TwilioNotificationService>();
+        }
+        else if ("email".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
+        {
+            builder.Services.AddSingleton<INotificationService, EmailNotificationService>();
+        }
+    }
 }
-else if ("email".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
-{
-    builder.Services.AddSingleton<INotificationService, EmailNotificationService>();
-}
-else
-{
-    builder.Services.AddSingleton<INotificationService, NullNotificationService>();
-}
+builder.Services.AddSingleton<INotificationSender, AggregateNotificationSender>();
 builder.Services.AddHostedService<WSMHealthCheckBackgroundService>();
 builder.Services.AddSingleton<WSMHealthCheckService>();
 builder.Services.AddAuthentication(ApiKeyAuthenticationOptions.DefaultScheme)

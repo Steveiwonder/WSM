@@ -1,7 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
 
-namespace WSM.Server.Services
+namespace WSM.Server.Services.Notifications
 {
     public class EmailNotificationService : INotificationService
     {
