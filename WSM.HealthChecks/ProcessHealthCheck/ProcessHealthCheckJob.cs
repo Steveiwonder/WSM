@@ -1,14 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Quartz;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
-using WSM.Client.Models;
+using WSM.Client.Jobs;
 using WSM.Shared;
 
-namespace WSM.Client.Jobs
+namespace WSM.HealthChecks.ProcessHealthCheck
 {
     [DisallowConcurrentExecution]
     public class ProcessHealthCheckJob : HealthCheckJobBase
@@ -23,17 +19,17 @@ namespace WSM.Client.Jobs
         {
             try
             {
-                var healthCheckDefinition = GetDefinition<ProcessHealthCheckDefinition>(context);
-                var minCount = Math.Max(1, healthCheckDefinition.MinCount ?? 1);
-                var maxCount = healthCheckDefinition.MaxCount;
-                var processCount = Process.GetProcessesByName(healthCheckDefinition.ProcessName).Length;
+                var healthCheckConfiguration = GetConfiguration<ProcessHealthCheckConfiguration>(context);
+                var minCount = Math.Max(1, healthCheckConfiguration.MinCount ?? 1);
+                var maxCount = healthCheckConfiguration.MaxCount;
+                var processCount = Process.GetProcessesByName(healthCheckConfiguration.ProcessName).Length;
                 string status = Constants.AvailableStatus;
                 if (processCount < minCount || maxCount != null && processCount > maxCount)
                 {
                     status = $"Found {processCount}, expected between {minCount} - {(maxCount == null ? "No Maximum" : maxCount)}";
                 }
-                
-                await CheckIn(healthCheckDefinition, status);
+
+                await CheckIn(healthCheckConfiguration, status);
             }
             catch (Exception ex)
             {

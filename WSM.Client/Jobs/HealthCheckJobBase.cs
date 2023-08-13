@@ -17,22 +17,22 @@ namespace WSM.Client.Jobs
 
         public abstract Task Execute(IJobExecutionContext context);
 
-        public T GetDefinition<T>(IJobExecutionContext context) where T : class
+        public T GetConfiguration<T>(IJobExecutionContext context) where T : class
         {
             return context.JobDetail.JobDataMap[HealthCheckDataKey] as T;
         }
 
-        public async Task CheckIn(HealthCheckDefinitionBase healthCheckDefinition, string status = null)
+        public async Task CheckIn(HealthCheckConfigurationBase healthCheckConfiguration, string status = null)
         {
-            var checkInSuccess = await _apiClient.CheckIn(healthCheckDefinition.Name, status ?? Constants.AvailableStatus);
+            var checkInSuccess = await _apiClient.CheckIn(healthCheckConfiguration.Name, status ?? Constants.AvailableStatus);
             if (!checkInSuccess)
             {
                 await _apiClient.RegisterHealthCheck(new HealthCheckRegistrationDto()
                 {
-                    Name = healthCheckDefinition.Name,
-                    BadStatusLimit = healthCheckDefinition.BadStatusLimit,
-                    CheckInInterval = healthCheckDefinition.Interval,
-                    MissedCheckInLimit = healthCheckDefinition.MissedCheckInLimit
+                    Name = healthCheckConfiguration.Name,
+                    BadStatusLimit = healthCheckConfiguration.BadStatusLimit,
+                    CheckInInterval = healthCheckConfiguration.Interval,
+                    MissedCheckInLimit = healthCheckConfiguration.MissedCheckInLimit
                 });
             }
 

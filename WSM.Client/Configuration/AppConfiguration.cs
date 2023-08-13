@@ -7,7 +7,7 @@ namespace WSM.Client.Configuration
 {
     internal class AppConfiguration
     {
-        public IEnumerable<HealthCheckDefinitionBase> HealthChecks { get; set; }
+        public IEnumerable<HealthCheckConfigurationBase> HealthChecks { get; set; }
         public ServerConfiguration Server { get; set; }
     }
 }

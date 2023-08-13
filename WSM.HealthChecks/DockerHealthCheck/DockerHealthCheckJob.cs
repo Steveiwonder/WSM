@@ -2,16 +2,10 @@
 using Docker.DotNet.Models;
 using Microsoft.Extensions.Logging;
 using Quartz;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Sockets;
-using System.Reflection.Metadata;
-using System.Threading.Tasks;
-using WSM.Client.Models;
+using WSM.Client.Jobs;
 using WSM.Shared;
 
-namespace WSM.Client.Jobs
+namespace WSM.HealthChecks.DockerHealthCheck
 {
     [DisallowConcurrentExecution]
     public class DockerHealthCheckJob : HealthCheckJobBase
@@ -25,24 +19,24 @@ namespace WSM.Client.Jobs
         }
         public override async Task Execute(IJobExecutionContext context)
         {
-            var healthCheckDefinition = GetDefinition<DockerContainerHealthCheckDefinition>(context);
+            var healthCheckConfiguration = GetConfiguration<DockerContainerHealthCheckConfiguration>(context);
             try
             {
                 var client = GetClient();
                 var containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
-                var formattedContainerName = $"/{healthCheckDefinition.ContainerName}";
+                var formattedContainerName = $"/{healthCheckConfiguration.ContainerName}";
                 var container = containers.FirstOrDefault(d => d.Names.Contains(formattedContainerName));
                 if (container == null)
                 {
-                    await CheckIn(healthCheckDefinition, "Container doesn't exist");
+                    await CheckIn(healthCheckConfiguration, "Container doesn't exist");
                     return;
                 }
                 if (container.State != DockerRunningState)
                 {
-                    await CheckIn(healthCheckDefinition, container.Status);
+                    await CheckIn(healthCheckConfiguration, container.Status);
                     return;
                 }
-                await CheckIn(healthCheckDefinition, Constants.AvailableStatus);
+                await CheckIn(healthCheckConfiguration, Constants.AvailableStatus);
             }
             catch (Exception ex)
             {

@@ -10,6 +10,7 @@ namespace WSM.Client.Configuration
 {
     internal static class AppConfigurationLoader
     {
+        private static Dictionary<string, Type> mappings = new Dictionary<string, Type>();
         internal static AppConfiguration Load()
         {
             
@@ -21,26 +22,21 @@ namespace WSM.Client.Configuration
                     {
                         JsonSerializer serializer = new JsonSerializer();
                         serializer.Converters.Add(new HttpMethodConverter());
-                        serializer.Converters.Add(new TypeSelectorConverter<HealthCheckDefinitionBase>(new Dictionary<string, Type>()
-                        {
-                            {"Heartbeat", typeof(HeartbeatHealthCheckDefinition) },
-                            {"Process", typeof(ProcessHealthCheckDefinition) },
-                            {"Port", typeof(TcpPortHealthCheckDefinition) },
-                            {"DockerContainer", typeof(DockerContainerHealthCheckDefinition) },
-                            {"DiskSpace", typeof(DiskSpaceHealthCheckDefinition) },
-                            {"Http", typeof(HttpRequestHealthCheckDefinition) },
-                        }));
-
+                        serializer.Converters.Add(new TypeSelectorConverter<HealthCheckConfigurationBase>(mappings));
 
                         var root = serializer.Deserialize<ConfigurationRoot>(jsonTextReader);
-
-
 
                         return root.App;
                     }
                 }
             }
         }
+
+        public static void AddMapping(string type, Type configurationType) 
+        {
+            mappings.Add(type, configurationType);
+        }
+
 
         private class ConfigurationRoot
         {

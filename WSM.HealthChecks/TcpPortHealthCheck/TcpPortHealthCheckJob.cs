@@ -1,14 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Quartz;
-using System;
-using System.Diagnostics;
 using System.Net.Sockets;
-using System.Reflection.Metadata;
-using System.Threading.Tasks;
-using WSM.Client.Models;
+using WSM.Client.Jobs;
 using WSM.Shared;
 
-namespace WSM.Client.Jobs
+namespace WSM.HealthChecks.TcpPortHealthCheck
 {
     [DisallowConcurrentExecution]
     public class TcpPortHealthCheckJob : HealthCheckJobBase
@@ -24,10 +20,10 @@ namespace WSM.Client.Jobs
         {
             try
             {
-                var healthCheckDefinition = GetDefinition<TcpPortHealthCheckDefinition>(context);
-                string status = GetTcpStatus(healthCheckDefinition);
+                var healthCheckConfiguration = GetConfiguration<TcpPortHealthCheckConfiguration>(context);
+                string status = GetTcpStatus(healthCheckConfiguration);
 
-                await CheckIn(healthCheckDefinition, status);
+                await CheckIn(healthCheckConfiguration, status);
             }
             catch (Exception ex)
             {
@@ -35,7 +31,7 @@ namespace WSM.Client.Jobs
             }
         }
 
-        private string GetTcpStatus(TcpPortHealthCheckDefinition definition)
+        private string GetTcpStatus(TcpPortHealthCheckConfiguration definition)
         {
             try
             {
@@ -54,7 +50,7 @@ namespace WSM.Client.Jobs
             return Constants.NotAvailableStatus;
         }
 
-        private string GetHost(TcpPortHealthCheckDefinition definition)
+        private string GetHost(TcpPortHealthCheckConfiguration definition)
         {
             return string.IsNullOrEmpty(definition.Host) ? "localhost" : definition.Host;
         }

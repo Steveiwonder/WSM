@@ -14,6 +14,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WSM.HealthChecks", "WSM.HealthChecks\WSM.HealthChecks.csproj", "{685453D2-C127-4E0B-AA0A-22ED39E4CBAF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{D6860E23-2FD2-40A5-8A6F-DD858505C7A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WSM.PluginExample", "WSM.PluginExample\WSM.PluginExample.csproj", "{3D1E2265-FD50-43BB-9F81-1BBB0A8B1C9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,9 +38,20 @@ Global
 		{E94FEE0A-0DF8-4D2C-A995-622D8B6C3BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E94FEE0A-0DF8-4D2C-A995-622D8B6C3BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E94FEE0A-0DF8-4D2C-A995-622D8B6C3BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{685453D2-C127-4E0B-AA0A-22ED39E4CBAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{685453D2-C127-4E0B-AA0A-22ED39E4CBAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{685453D2-C127-4E0B-AA0A-22ED39E4CBAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{685453D2-C127-4E0B-AA0A-22ED39E4CBAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D1E2265-FD50-43BB-9F81-1BBB0A8B1C9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D1E2265-FD50-43BB-9F81-1BBB0A8B1C9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D1E2265-FD50-43BB-9F81-1BBB0A8B1C9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D1E2265-FD50-43BB-9F81-1BBB0A8B1C9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3D1E2265-FD50-43BB-9F81-1BBB0A8B1C9B} = {D6860E23-2FD2-40A5-8A6F-DD858505C7A1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57AC7239-9DBC-4826-A0AF-9C0653DBB99F}
