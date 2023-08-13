@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace WSM.Client.Configuration
 {
-    public class TypeSelectorConverter<TInterface> : Newtonsoft.Json.JsonConverter
+    public class TypeSelectorConverter<TInterface> : JsonConverter
     {
         private Dictionary<string, Type> _mappings;
         public TypeSelectorConverter(Dictionary<string, Type> mappings)

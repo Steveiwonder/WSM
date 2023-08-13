@@ -77,21 +77,24 @@ namespace WSM.Client
                         break;
 
                     case HealthCheckType.Process:
-                        RegisterJob<ProcessHealthCheckJob>(healthCheck, (healthCheck as ProcessHealthCheckDefinition).Interval);
+                        RegisterJob<ProcessHealthCheckJob>(healthCheck, healthCheck.Interval);
                         break;
 
                     case HealthCheckType.Port:
-                        RegisterJob<TcpPortHealthCheckJob>(healthCheck, (healthCheck as TcpPortHealthCheckDefinition).Interval);
+                        RegisterJob<TcpPortHealthCheckJob>(healthCheck, healthCheck.Interval);
                         break;
 
                     case HealthCheckType.DockerContainer:
-                        RegisterJob<DockerHealthCheckJob>(healthCheck, (healthCheck as DockerContainerHealthCheckDefinition).Interval);
+                        RegisterJob<DockerHealthCheckJob>(healthCheck, healthCheck.Interval);
                         break;
 
                     case HealthCheckType.DiskSpace:
-                        RegisterJob<DiskSpaceHealthCheckJob>(healthCheck, (healthCheck as DiskSpaceHealthCheckDefinition).Interval);
+                        RegisterJob<DiskSpaceHealthCheckJob>(healthCheck, healthCheck.Interval);
                         break;
-                 
+                    case HealthCheckType.Http:
+                        RegisterJob<HttpRequestHealthCheckJob>(healthCheck, healthCheck.Interval);
+                        break;
+
 
                 }
             }

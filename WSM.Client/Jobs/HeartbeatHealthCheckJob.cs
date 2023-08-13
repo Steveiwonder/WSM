@@ -20,7 +20,7 @@ namespace WSM.Client.Jobs
         {
             try
             {
-                var healthCheckDefinition = GetDefinition<HeartBeatHealthCheckDefinition>(context);
+                var healthCheckDefinition = GetDefinition<HeartbeatHealthCheckDefinition>(context);
                 await CheckIn(healthCheckDefinition);
             }
             catch (Exception ex)

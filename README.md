@@ -4,7 +4,7 @@
 WSM is a service for monitoring different aspects of a Windows server and alerting when certain conditions are met.
 
 ### What can WSM monitor?
-See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space for now.
+See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space & http request for now.
 
 ### Why?
 I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to set up but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
@@ -249,6 +249,28 @@ Checks for the existence of the given process
 - `ProcessName` (Required) - The name of the process to monitor without `.exe`
 - `MinCount` (Optional) - The minimum number of instances, defaults to 1
 - `MaxCount` (Optional) - The maximum number of instances. If not specified, there is no limit
+
+### Http
+Sends a HTTP request and check for the correct status code, it can also optionally check for the response time and response body
+```json
+{
+  "Name": "Google HTTP",
+  "Type": "Http",
+  "Interval": "00:00:02",
+  "Url": "https://google.com",
+  "Method": "get",
+  "ExpectedStatusCode": 200,
+  "MaxResponseDuration": "00:00:02",
+  "RequestBody": "",
+  "ExpectedResponseBody": "This response has been delayed for 1 seconds"
+}
+```
+- `Url` (Required) - The URL that the request should be made too
+- `Method` (Optional) - The HTTP method to use, defaults to "Options"
+- `ExpectedStatusCode` (Optional) - The expected HTTP status, defaults to 200
+- `MaxResponseDuration` (Optional) - The maxiumum duration you would not expect the request to exceed, defaults to 100s [HttpClient Default](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=net-7.0)
+- `RequestBody` (Optional) - The payload that can be sent, make sure you change the `Method` to the appropriate value
+- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion
 
 ### Installing the Windows service
 Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start the service
