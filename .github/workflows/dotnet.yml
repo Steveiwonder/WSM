@@ -39,6 +39,7 @@ jobs:
     - name: Build & Copy Health Checks
       run: |
           dotnet build "./WSM.HealthChecks/WSM.HealthChecks.csproj" -c Release
+          mkdir -p ./build/wsm.client/healthchecks
           cp ./WSM.HealthChecks/bin/Release/net6.0/WSM.HealthChecks.dll ./build/wsm.client/healthchecks/WSM.HealthChecks.dll
 
     
