@@ -1,18 +1,9 @@
-﻿using Docker.DotNet;
-using Docker.DotNet.Models;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Quartz;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Reflection.Metadata;
-using System.Threading.Tasks;
-using WSM.Client.Models;
+using WSM.Client.Jobs;
 using WSM.Shared;
 
-namespace WSM.Client.Jobs
+namespace WSM.HealthChecks.DiskSpaceHealthCheck
 {
     [DisallowConcurrentExecution]
     public class DiskSpaceHealthCheckJob : HealthCheckJobBase
@@ -26,24 +17,24 @@ namespace WSM.Client.Jobs
         }
         public override async Task Execute(IJobExecutionContext context)
         {
-            var healthCheckDefinition = GetDefinition<DiskSpaceHealthCheckDefinition>(context);
+            var healthCheckConfiguration = GetConfiguration<DiskSpaceHealthCheckConfiguration>(context);
             try
             {
-                var drive = DriveInfo.GetDrives().FirstOrDefault(d => d.Name == healthCheckDefinition.DiskName);
+                var drive = DriveInfo.GetDrives().FirstOrDefault(d => d.Name == healthCheckConfiguration.DiskName);
                 if (drive == null)
                 {
-                    await CheckIn(healthCheckDefinition, DiskNotFoundStatus);
+                    await CheckIn(healthCheckConfiguration, DiskNotFoundStatus);
                     return;
                 }
 
-                if(drive.TotalFreeSpace< healthCheckDefinition.MinimumFreeSpace)
+                if (drive.TotalFreeSpace < healthCheckConfiguration.MinimumFreeSpace)
                 {
                     string mbAvailable = FormatUtils.SizeSuffix(drive.TotalFreeSpace);
-                    await CheckIn(healthCheckDefinition, $"{DiskSpaceLowStatus}, {mbAvailable} available");
+                    await CheckIn(healthCheckConfiguration, $"{DiskSpaceLowStatus}, {mbAvailable} available");
                     return;
                 }
 
-                await CheckIn(healthCheckDefinition, Constants.AvailableStatus);
+                await CheckIn(healthCheckConfiguration, Constants.AvailableStatus);
             }
             catch (Exception ex)
             {

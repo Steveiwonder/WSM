@@ -22,15 +22,18 @@ namespace WSM.Client
         private readonly IJobFactory _jobFactory;
         private readonly AppConfiguration _appConfiguration;
         private readonly WSMApiClient _client;
+        private readonly IEnumerable<IHealthCheckDefinition> _healthCheckDefinitions;
         private readonly ILogger _logger;
         private IScheduler scheduler;
 
-        public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, AppConfiguration appConfiguration, WSMApiClient client)
+        public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, AppConfiguration appConfiguration, WSMApiClient client,
+            IEnumerable<IHealthCheckDefinition> healthCheckDefinitions)
         {
             _logger = logger;
             _jobFactory = jobfactory;
             _appConfiguration = appConfiguration;
             _client = client;
+            _healthCheckDefinitions = healthCheckDefinitions;
         }
         public void Start()
         {
@@ -67,51 +70,31 @@ namespace WSM.Client
         }
         private void StartJobs()
         {
-            foreach (var healthCheck in _appConfiguration.HealthChecks)
+            foreach (var healthCheckConfig in _appConfiguration.HealthChecks)
             {
-                switch (healthCheck.Type)
+                var definition = _healthCheckDefinitions.FirstOrDefault(hcd => hcd.Type.Equals(healthCheckConfig.Type, StringComparison.OrdinalIgnoreCase));
+                if(definition == null)
                 {
-
-                    case HealthCheckType.HeartBeat:
-                        RegisterJob<HeartbeatHealthCheckJob>(healthCheck, Constants.DefaultInterval);
-                        break;
-
-                    case HealthCheckType.Process:
-                        RegisterJob<ProcessHealthCheckJob>(healthCheck, healthCheck.Interval);
-                        break;
-
-                    case HealthCheckType.Port:
-                        RegisterJob<TcpPortHealthCheckJob>(healthCheck, healthCheck.Interval);
-                        break;
-
-                    case HealthCheckType.DockerContainer:
-                        RegisterJob<DockerHealthCheckJob>(healthCheck, healthCheck.Interval);
-                        break;
-
-                    case HealthCheckType.DiskSpace:
-                        RegisterJob<DiskSpaceHealthCheckJob>(healthCheck, healthCheck.Interval);
-                        break;
-                    case HealthCheckType.Http:
-                        RegisterJob<HttpRequestHealthCheckJob>(healthCheck, healthCheck.Interval);
-                        break;
-
-
+                    continue;
                 }
+                RegisterJob(definition, healthCheckConfig);
+               
             }
         }
 
 
 
-        private void RegisterJob<T>(HealthCheckDefinitionBase healthCheckDefinition, TimeSpan interval) where T : HealthCheckJobBase
+        private void RegisterJob(IHealthCheckDefinition healthCheckDefinition ,HealthCheckConfigurationBase healthCheckConfiguration)
         {
+            var interval = healthCheckConfiguration.Interval;
             if (interval < TimeSpan.Zero)
             {
                 interval = Constants.DefaultInterval;
             }
-            IJobDetail job = JobBuilder.Create<T>()
-                      .WithIdentity(healthCheckDefinition.Name, "group1")
+            IJobDetail job = JobBuilder.Create(healthCheckDefinition.JobType)
+                      .WithIdentity(healthCheckConfiguration.Name, "group1")
                       .Build();
-            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheckDefinition);
+            job.JobDataMap.Add(HealthCheckJobBase.HealthCheckDataKey, healthCheckConfiguration);
 
             ITrigger trigger = TriggerBuilder.Create()
            .StartNow()

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using WSM.Client.Models;
 
-namespace WSM.Client.Models
+namespace WSM.HealthChecks.ProcessHealthCheck
 {
-    public class ProcessHealthCheckDefinition : HealthCheckDefinitionBase
+    public class ProcessHealthCheckConfiguration : HealthCheckConfigurationBase
     {
         public string ProcessName { get; set; }
         public int? MinCount { get; set; }

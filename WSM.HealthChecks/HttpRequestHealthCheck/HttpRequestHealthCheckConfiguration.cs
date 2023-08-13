@@ -1,11 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
-using System.Net.Http;
+﻿using WSM.Client.Models;
 
-namespace WSM.Client.Models
+namespace WSM.HealthChecks.HttpRequestHealthCheck
 {
-    public class HttpRequestHealthCheckDefinition : HealthCheckDefinitionBase
+    public class HttpRequestHealthCheckConfiguration : HealthCheckConfigurationBase
     {
         public string Url { get; set; }
         public HttpMethod Method = HttpMethod.Options;
@@ -13,8 +10,5 @@ namespace WSM.Client.Models
         public TimeSpan? MaxResponseDuration { get; set; }
         public string RequestBody { get; set; }
         public string ExpectedResponseBody { get; set; }
-
-
-
     }
 }

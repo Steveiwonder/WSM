@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Quartz;
-using System;
-using System.Threading.Tasks;
-using WSM.Client.Models;
+using WSM.Client.Jobs;
 using WSM.Shared;
 
-namespace WSM.Client.Jobs
+namespace WSM.HealthChecks.HeartbeatHealthCheck
 {
     [DisallowConcurrentExecution]
     public class HeartbeatHealthCheckJob : HealthCheckJobBase
@@ -20,8 +18,8 @@ namespace WSM.Client.Jobs
         {
             try
             {
-                var healthCheckDefinition = GetDefinition<HeartbeatHealthCheckDefinition>(context);
-                await CheckIn(healthCheckDefinition);
+                var healthCheckConfiguration = GetConfiguration<HeartbeatHealthCheckConfiguration>(context);
+                await CheckIn(healthCheckConfiguration);
             }
             catch (Exception ex)
             {
