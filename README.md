@@ -4,7 +4,7 @@
 WSM is a service for monitoring different aspects of a Windows server and alerting when certain conditions are met.
 
 ### What can WSM monitor?
-See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space & http request for now.
+See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space, free memory & http request for now.
 
 ### Why?
 I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and inevitably something would eventually fail, I wouldn't usually find this out until someone using one of the services let me know. I wanted a tool that was free and easy to set up but couldn't find one that did everything I wanted, also I like coding so I figured it was a good candidate for a project, 3 days later WSM was born.
@@ -272,6 +272,18 @@ Sends a HTTP request and check for the correct status code, it can also optional
 - `RequestBody` (Optional) - The payload that can be sent, make sure you change the `Method` to the appropriate value
 - `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion
 
+### FreeMemory
+Checks the system for free memory
+```json
+{
+  "Name": "Free Memory",
+  "Type": "Free Memory",
+  "Interval": "00:01:00",
+  "MinimumFreeMemory": 100000
+}
+```
+- `MinimumFreeMemory` (Required) - The minimum number of free bytes you expect the server to have
+
 ### Installing the Windows service
 Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start the service
 
@@ -286,4 +298,4 @@ Put nginx in front of it and proxy to 443->80 on the docker image
 2. ???
 
 ### What if a health check type isn't supported?
-Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install direction\HealthChecks alongside `WSM.HealthChecks.dll`
+Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
