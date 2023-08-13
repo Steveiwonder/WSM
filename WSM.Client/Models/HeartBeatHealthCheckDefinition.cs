@@ -1,6 +1,6 @@
 ﻿namespace WSM.Client.Models
 {
-    public class HeartBeatHealthCheckDefinition : HealthCheckDefinitionBase
+    public class HeartbeatHealthCheckDefinition : HealthCheckDefinitionBase
     {
 
     }

@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WSM.Client", "WSM.Client\WS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WSM.Server", "WSM.Server\WSM.Server.csproj", "{6F022ECD-EE8A-4081-9021-58D01C349033}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WSM.Shared", "WSM.Shared\WSM.Shared.csproj", "{E94FEE0A-0DF8-4D2C-A995-622D8B6C3BDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WSM.Shared", "WSM.Shared\WSM.Shared.csproj", "{E94FEE0A-0DF8-4D2C-A995-622D8B6C3BDE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3BCD3960-2ACE-4BA3-BE33-9017BB829DD5}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

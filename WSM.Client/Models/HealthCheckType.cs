@@ -11,6 +11,7 @@ namespace WSM.Client.Models
         Process,
         Port,
         DockerContainer,
-        DiskSpace
+        DiskSpace,
+        Http
     }
 }

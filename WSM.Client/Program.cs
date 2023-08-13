@@ -86,6 +86,7 @@ namespace WSM.Client
             services.AddSingleton<TcpPortHealthCheckJob>();
             services.AddSingleton<DockerHealthCheckJob>();
             services.AddSingleton<DiskSpaceHealthCheckJob>();
+            services.AddSingleton<HttpRequestHealthCheckJob>();
             services.AddSingleton<WindowService>();
             services.AddLogging(builder =>
             {

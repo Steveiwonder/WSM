@@ -2,16 +2,16 @@
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
-namespace WSM.Server.Services
+namespace WSM.Server.Services.Notifications
 {
-    public class WhatsAppNotificationService : INotificationService
+    public class TwilioNotificationService : INotificationService
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<WhatsAppNotificationService> _logger;
+        private readonly ILogger<TwilioNotificationService> _logger;
         private readonly string _from;
         private readonly string _to;
 
-        public WhatsAppNotificationService(IConfiguration configuration, ILogger<WhatsAppNotificationService> logger)
+        public TwilioNotificationService(IConfiguration configuration, ILogger<TwilioNotificationService> logger)
         {
             _configuration = configuration;
             _logger = logger;

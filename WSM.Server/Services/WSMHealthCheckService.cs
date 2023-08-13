@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using WSM.Server.Configuration;
 using WSM.Server.Models;
+using WSM.Server.Services.Notifications;
 using WSM.Shared;
 using WSM.Shared.Dtos;
 
@@ -16,15 +17,15 @@ namespace WSM.Server.Services
 
 
         private readonly ILogger<WSMHealthCheckService> _logger;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationSender _notificationSender;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ClaimsPrincipal ClaimsPrincipal => _httpContextAccessor?.HttpContext?.User;
 
-        public WSMHealthCheckService(ILogger<WSMHealthCheckService> logger, INotificationService notificationService, IHttpContextAccessor httpContextAccessor)
+        public WSMHealthCheckService(ILogger<WSMHealthCheckService> logger, INotificationSender notificationSender, IHttpContextAccessor httpContextAccessor)
         {
 
             _logger = logger;
-            _notificationService = notificationService;
+            _notificationSender = notificationSender;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -98,7 +99,7 @@ namespace WSM.Server.Services
             };
             healthCheckStatus.UpdateNextCheckInTime();
             server.TryAddHealthCheck(healthCheck.Name, healthCheckStatus);
-            _notificationService.SendNotificationAsync("New Health Check Registration", $"Server: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
+            _notificationSender.SendNotificationAsync("New Health Check Registration", $"Server: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
 
         }
 

@@ -1,6 +1,7 @@
 ﻿using WSM.Server.Services;
 using WSM.Shared;
 using WSM.Server.Models;
+using WSM.Server.Services.Notifications;
 
 namespace WSM.Server.BackgroundServices
 {
@@ -9,7 +10,7 @@ namespace WSM.Server.BackgroundServices
 
         private readonly WSMHealthCheckService _healthCheckService;
         private readonly ILogger<WSMHealthCheckBackgroundService> _logger;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationSender _notificationSender;
         private readonly TimeSpan _alertFrequency;
         private readonly TimeSpan _reportSlipDuration;
         private readonly TimeSpan _backgroundServiceDelay;
@@ -18,11 +19,11 @@ namespace WSM.Server.BackgroundServices
         public WSMHealthCheckBackgroundService(WSMHealthCheckService healthCheckService,
             ILogger<WSMHealthCheckBackgroundService> logger,
             IConfiguration configuration,
-            INotificationService notificationService)
+            INotificationSender notificationSender)
         {
             _healthCheckService = healthCheckService;
             _logger = logger;
-            _notificationService = notificationService;
+            _notificationSender = notificationSender;
             _alertFrequency = configuration.GetSection("AlertFrequency").Get<TimeSpan>();
             _reportSlipDuration = configuration.GetSection("ReportSlipDuration").Get<TimeSpan>();
             _backgroundServiceDelay = configuration.GetSection("BackgroundServiceDelay").Get<TimeSpan>();
@@ -84,7 +85,7 @@ namespace WSM.Server.BackgroundServices
             if (!hasMissedCheckIn && healthCheckStatus.MissedCheckInCount != 0)
             {
                 healthCheckStatus.ResetMissedCheckInCount();
-                _notificationService.SendNotificationAsync($"Checked In {healthCheckStatus.Name}", $"{healthCheckStatus.Name} has checked in");
+                _notificationSender.SendNotificationAsync($"Checked In {healthCheckStatus.Name}", $"{healthCheckStatus.Name} has checked in");
             }
 
             return hasMissedCheckIn;
@@ -97,7 +98,7 @@ namespace WSM.Server.BackgroundServices
             if (!hasBadStatus && healthCheckStatus.BadStatusCount != 0)
             {
                 healthCheckStatus.ResetBadStatusCount();
-                _notificationService.SendNotificationAsync($"Status OK {healthCheckStatus.Name}", $"{healthCheckStatus.Name} is now OK");
+                _notificationSender.SendNotificationAsync($"Status OK {healthCheckStatus.Name}", $"{healthCheckStatus.Name} is now OK");
 
             }
 
@@ -130,7 +131,7 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} hasn't checked in, last check in time was {(healthCheckStatus.LastCheckInTime == null ? "never" : healthCheckStatus.LastCheckInTime.ToString())}";
             _logger.LogWarning(msg);
 
-            _notificationService.SendNotificationAsync("Missed Check In", msg);
+            _notificationSender.SendNotificationAsync("Missed Check In", msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastMissedCheckInAlertSent();
         }
@@ -145,7 +146,7 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} reported a bad status, '{healthCheckStatus.LastStatus}', reported {healthCheckStatus.BadStatusCount} times";
             _logger.LogWarning(msg);
 
-            _notificationService.SendNotificationAsync("Bad Status Report", msg);
+            _notificationSender.SendNotificationAsync("Bad Status Report", msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastBadCheckInAlertSent();
         }

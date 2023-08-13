@@ -4,7 +4,7 @@
 WSM is a service for monitoring different aspects of a Windows server and alerting when certain conditions are met.
 
 ### What can WSM monitor?
-See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space for now.
+See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space & http request for now.
 
 ### Why?
 I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and inevitably something would eventually fail, I wouldn't usually find this out until someone using one of the services let me know. I wanted a tool that was free and easy to set up but couldn't find one that did everything I wanted, also I like coding so I figured it was a good candidate for a project, 3 days later WSM was born.
@@ -57,7 +57,7 @@ Here is an example `appsettings.json`
       "Name": "Home Lab"
     }
   ],
-  "NotificationType": "Email",
+  "NotificationTypes": ["Email", "Twilio"],
   "Email": {
     "Host": "",
     "Username": "",
@@ -65,7 +65,6 @@ Here is an example `appsettings.json`
     "Port": 587,
     "From": "",
     "To": ""
-
   },
   "Twilio": {
     "AccountId": "",
@@ -113,10 +112,13 @@ authentication between client and server, keep it secret, keep it safe 😜.
   ],
 ```
 
-`NotificationType` is the type of notification you want, the two supported values are `Email` and `WhatsApp`.  If using `Email` you must fill in the `Email` configuration. 
-If you use `WhatsApp` then you must supply the `Twilio` configuration.
+`NotificationTypes` can be used to configure 0 or more notification types you'd like to send. 
 
-`Email` is only used when `NotificationType` is set to `Email`
+Supported values:
+- Email
+- Twilio
+
+`Email` - Send email notifications
 - `Host` the host of the email server
 - `Port` the port of the email server
 - `Username` the username to authenticate with
@@ -124,11 +126,11 @@ If you use `WhatsApp` then you must supply the `Twilio` configuration.
 - `From` the email address the email should come from
 - `To` the email address the email should be sent to
 
-`WhatsApp` is only used when `NotificationType` is set to `WhatsApp` - This could also be used to send SMS, but it's untested
+`Twilio` - This can be used to send SMS or WhatsApp messages via Twilio
 - `AccountId` your Twilio Account Id - available within Twilio console https://console.twilio.com
 - `AuthToken` your Twilio Auth Token - available within Twilio console https://console.twilio.com
-- `From` your Twilio phone number that the message should be sent from. For WhatsApp it's in the format of `whatsapp:+1555555555555`
-- `To` is the number the message should be sent to. For WhatsApp it's in the format of `whatsapp:+1555555555555`
+- `From` your Twilio phone number that the message should be sent from. For WhatsApp it's in the format of `whatsapp:+1555555555555` for SMS it'll be `+1555555555555`
+- `To` is the number the message should be sent to. For WhatsApp it's in the format of `whatsapp:+1555555555555` for SMS it'll be `+1555555555555`
 
 Running the container
 
@@ -247,6 +249,28 @@ Checks for the existence of the given process
 - `ProcessName` (Required) - The name of the process to monitor without `.exe`
 - `MinCount` (Optional) - The minimum number of instances, defaults to 1
 - `MaxCount` (Optional) - The maximum number of instances. If not specified, there is no limit
+
+### Http
+Sends a HTTP request and check for the correct status code, it can also optionally check for the response time and response body
+```json
+{
+  "Name": "Google HTTP",
+  "Type": "Http",
+  "Interval": "00:00:02",
+  "Url": "https://google.com",
+  "Method": "get",
+  "ExpectedStatusCode": 200,
+  "MaxResponseDuration": "00:00:02",
+  "RequestBody": "",
+  "ExpectedResponseBody": "This response has been delayed for 1 seconds"
+}
+```
+- `Url` (Required) - The URL that the request should be made too
+- `Method` (Optional) - The HTTP method to use, defaults to "Options"
+- `ExpectedStatusCode` (Optional) - The expected HTTP status, defaults to 200
+- `MaxResponseDuration` (Optional) - The maxiumum duration you would not expect the request to exceed, defaults to 100s [HttpClient Default](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=net-7.0)
+- `RequestBody` (Optional) - The payload that can be sent, make sure you change the `Method` to the appropriate value
+- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion
 
 ### Installing the Windows service
 Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start the service

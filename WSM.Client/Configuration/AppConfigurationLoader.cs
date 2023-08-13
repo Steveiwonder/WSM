@@ -20,13 +20,15 @@ namespace WSM.Client.Configuration
                     using (var jsonTextReader = new JsonTextReader(textReader))
                     {
                         JsonSerializer serializer = new JsonSerializer();
+                        serializer.Converters.Add(new HttpMethodConverter());
                         serializer.Converters.Add(new TypeSelectorConverter<HealthCheckDefinitionBase>(new Dictionary<string, Type>()
                         {
-                            {"Heartbeat", typeof(HeartBeatHealthCheckDefinition) },
+                            {"Heartbeat", typeof(HeartbeatHealthCheckDefinition) },
                             {"Process", typeof(ProcessHealthCheckDefinition) },
                             {"Port", typeof(TcpPortHealthCheckDefinition) },
                             {"DockerContainer", typeof(DockerContainerHealthCheckDefinition) },
                             {"DiskSpace", typeof(DiskSpaceHealthCheckDefinition) },
+                            {"Http", typeof(HttpRequestHealthCheckDefinition) },
                         }));
 
 
