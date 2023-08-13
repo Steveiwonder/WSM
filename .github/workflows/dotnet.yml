@@ -35,6 +35,12 @@ jobs:
 
     - name: Build & Publish WSM.Client
       run: dotnet publish "./WSM.Client/WSM.Client.csproj" -o ./build/wsm.client/ -c Release
+
+    - name: Build & Copy Health Checks
+      run: |
+          dotnet build "./WSM.HealthChecks/WSM.HealthChecks.csproj" -c Release
+          cp ./WSM.HealthChecks/bin/Release/net6.0/WSM.HealthChecks.dll ./build/wsm.client/healthchecks
+
     
     - name: Build WSM.Server Docker
       uses: docker/build-push-action@v4
