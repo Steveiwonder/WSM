@@ -286,4 +286,4 @@ Put nginx in front of it and proxy to 443->80 on the docker image
 2. ???
 
 ### What if a health check type isn't supported?
-Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install direction\HealthChecks alongside `WSM.HealthChecks.dll`
+Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
