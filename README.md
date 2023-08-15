@@ -291,7 +291,7 @@ Sends a HTTP request and check for the correct status code, it can also optional
 - `ExpectedStatusCode` (Optional) - The expected HTTP status, defaults to 200
 - `MaxResponseDuration` (Optional) - The maxiumum duration you would not expect the request to exceed, defaults to 100s [HttpClient Default](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=net-7.0)
 - `RequestBody` (Optional) - The payload that can be sent, make sure you change the `Method` to the appropriate value
-- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion, if the response body does not match. It'll be considered a bad status report and alerts may be triggered.
+- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion, if the response body does not match, it'll be considered a bad status report and alerts may be triggered.
 
 ### FreeMemory
 Checks the system for free memory
@@ -311,9 +311,9 @@ Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start t
 And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
 
 ### HTTPS Configuration?
-HTTPS is essential for the security and I do recommended configuring your docker container (server) with a HTTPS reverse proxy.
+HTTPS is essential for the security I highly recommended configuring your docker container (server) with a HTTPS reverse proxy.
 
-If you're unfamiliar with setting up HTTPS, one common approach is to use Nginx as a reverse proxy in front of your application, along with Let's Encrypt to obtain a free SSL certificate. Here's a comprehensive tutorial to guide you through the setup: Nginx as a Reverse Proxy with Let's Encrypt SSL.
+If you're unfamiliar with setting up HTTPS, one common approach is to use Nginx as a reverse proxy in front of your application, along with Let's Encrypt to obtain a free SSL certificate.
 There are plenty of tutorials out there, like this one for example [Setup SSL with Docker, NGINX and Lets Encrypt](https://www.programonaut.com/setup-ssl-with-docker-nginx-and-lets-encrypt/)
 
 ### What's next for WSM?
