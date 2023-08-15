@@ -1,4 +1,23 @@
 # WSM (Windows Server Monitor) Overview
+
+## Table of Contents
+
+- [WSM (Windows Server Monitor) Overview](#wsm-windows-server-monitor-overview)
+  - [What is WSM?](#what-is-wsm)
+  - [What Can WSM Monitor?](#what-can-wsm-monitor)
+  - [Why Was WSM Created?](#why-was-wsm-created)
+  - [Who Should Use WSM?](#who-should-use-wsm)
+  - [Software Architecture](#software-architecture)
+    - [Client (Windows Service)](#client-windows-service)
+    - [Server (Docker Container)](#server-docker-container)
+  - [Installation](#installation)
+    - [Server](#server)
+    - [Client](#client)
+  - [Health Check Types](#health-check-types)
+  - [HTTPS Configuration](#https-configuration)
+  - [Future Plans for WSM](#future-plans-for-wsm)
+  - [Need a New Health Check Type?](#need-a-new-health-check-type)
+
 ### What is WSM?
 
 WSM is a service for monitoring different aspects of a Windows server and alerting when certain conditions are met.
@@ -97,8 +116,8 @@ don't want a notification every 15 seconds. In the example above, a notification
     }
   ],
 ```
-The `Name` of the server can be anything you one, it's included in alerts so make it something meaningful. The `ApiKey` can actually be anything you want too, it's just used for 
-authentication between client and server, keep it secret, keep it safe 😜.
+The `Name` of the server can be anything you one, it's included in alerts so make it something meaningful. The `ApiKey` can actually be anything you want too, it's used for 
+authentication between client and server, use a secure string generator, keep it secret, keep it safe 😜.
 ```json
   "Servers": [
     {
@@ -137,7 +156,7 @@ Running the container
 `docker run -d -p 80:80 -v /app/appsettings.json:/app/appsettings.json --name wsm.server --restart unless-stopped  steveiwonder/wsm.server`
 
 ## Client
-There are three steps for installing the server
+There are three steps for installing the client
 1. Extracting the release zip
 2. Create an appsettings.json file
 3. Install the Windows service
@@ -270,7 +289,7 @@ Sends a HTTP request and check for the correct status code, it can also optional
 - `ExpectedStatusCode` (Optional) - The expected HTTP status, defaults to 200
 - `MaxResponseDuration` (Optional) - The maxiumum duration you would not expect the request to exceed, defaults to 100s [HttpClient Default](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=net-7.0)
 - `RequestBody` (Optional) - The payload that can be sent, make sure you change the `Method` to the appropriate value
-- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion
+- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion, if the response body does not match. It'll be considered a bad status report and alerts may be triggered.
 
 ### FreeMemory
 Checks the system for free memory
@@ -290,12 +309,13 @@ Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start t
 And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
 
 ### Wait, what, no HTTPS?
+HTTPS is essential for the security and I do recommended setting it up.
 
-Put nginx in front of it and proxy to 443->80 on the docker image
+If you're unfamiliar with setting up HTTPS, one common approach is to use Nginx as a reverse proxy in front of your application, along with Let's Encrypt to obtain a free SSL certificate. Here's a comprehensive tutorial to guide you through the setup: Nginx as a Reverse Proxy with Let's Encrypt SSL.
+There are plenty of tutorials out there, like this one for example [Setup SSL with Docker, NGINX and Lets Encrypt](https://www.programonaut.com/setup-ssl-with-docker-nginx-and-lets-encrypt/)
 
 ### What's next for WSM?
 1. Add more health check types
-2. ???
 
 ### What if a health check type isn't supported?
 Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
