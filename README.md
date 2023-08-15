@@ -4,9 +4,9 @@
 
 - [WSM (Windows Server Monitor) Overview](#wsm-windows-server-monitor-overview)
   - [What is WSM?](#what-is-wsm)
-  - [What Can WSM Monitor?](#what-can-wsm-monitor)
-  - [Why Was WSM Created?](#why-was-wsm-created)
-  - [Who Should Use WSM?](#who-should-use-wsm)
+  - [What can WSM monitor?](#what-can-wsm-monitor)
+  - [Why was WSM created?](#why-was-wsm-created)
+  - [Who is it for?](#who-is-it-for)
   - [Software Architecture](#software-architecture)
     - [Client (Windows Service)](#client-windows-service)
     - [Server (Docker Container)](#server-docker-container)
@@ -15,8 +15,9 @@
     - [Client](#client)
   - [Health Check Types](#health-check-types)
   - [HTTPS Configuration](#https-configuration)
-  - [Future Plans for WSM](#future-plans-for-wsm)
-  - [Need a New Health Check Type?](#need-a-new-health-check-type)
+  - [Whats next for WSM?](#whats-next-for-wsm)
+  - [Need a new health check type?](#need-a-new-health-check-type)
+  - [Creating your own plugin](#creating-your-own-plugin)
 
 ### What is WSM?
 
@@ -25,14 +26,15 @@ WSM is a service for monitoring different aspects of a Windows server and alerti
 ### What can WSM monitor?
 See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space, free memory & http request for now.
 
-### Why?
+### Why was WSM created?
 I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to set up but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
 
 ### Who is it for?
 Anyone. I wouldn't suggest running this in a large enterprise environment with system-critical infrastructure even though you technically could. It's designed for use with home labs and _maybe_ small businesses.
 
-### The Software
+### Software Architecture
 WSM is split into two main components, the server and the client(s).
+
 #### Client (Windows Service)
 The client is responsible for running all of the configured health checks and reporting their state to the server
 
@@ -308,8 +310,8 @@ Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start t
 
 And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
 
-### Wait, what, no HTTPS?
-HTTPS is essential for the security and I do recommended setting it up.
+### HTTPS Configuration?
+HTTPS is essential for the security and I do recommended configuring your docker container (server) with a HTTPS reverse proxy.
 
 If you're unfamiliar with setting up HTTPS, one common approach is to use Nginx as a reverse proxy in front of your application, along with Let's Encrypt to obtain a free SSL certificate. Here's a comprehensive tutorial to guide you through the setup: Nginx as a Reverse Proxy with Let's Encrypt SSL.
 There are plenty of tutorials out there, like this one for example [Setup SSL with Docker, NGINX and Lets Encrypt](https://www.programonaut.com/setup-ssl-with-docker-nginx-and-lets-encrypt/)
@@ -317,5 +319,8 @@ There are plenty of tutorials out there, like this one for example [Setup SSL wi
 ### What's next for WSM?
 1. Add more health check types
 
-### What if a health check type isn't supported?
-Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
+### Need a new health check type?
+Create your own or raise an issue on github and I'll try to accomodate. 
+
+### Creating your own plugin
+Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
