@@ -27,6 +27,10 @@ namespace WSM.Server.BackgroundServices
             _alertFrequency = configuration.GetSection("AlertFrequency").Get<TimeSpan>();
             _reportSlipDuration = configuration.GetSection("ReportSlipDuration").Get<TimeSpan>();
             _backgroundServiceDelay = configuration.GetSection("BackgroundServiceDelay").Get<TimeSpan>();
+            if(_backgroundServiceDelay <= TimeSpan.Zero)
+            {
+                _backgroundServiceDelay = TimeSpan.FromSeconds(15);
+            }
         }
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -73,7 +77,7 @@ namespace WSM.Server.BackgroundServices
                             _logger.LogError(ex, "ExecuteAsync");
                         }
                     }
-                    await Task.Delay(500);
+                    await Task.Delay(1000);
                 }
             }
         }
