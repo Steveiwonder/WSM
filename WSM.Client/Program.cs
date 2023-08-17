@@ -18,27 +18,34 @@ namespace WSM.Client
 
         static async Task Main(string[] args)
         {
-            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-
-            IHost host = Host.CreateDefaultBuilder(args)
-                .UseWindowsService()
-                .UseSystemd()
-                .ConfigureServices((context, services) =>
-                {
-                    ConfigureServices(services);
-                }).Build();
-
             try
             {
-                // test server connection
-                var apiClient = host.Services.GetRequiredService<WSMApiClient>();
-                await apiClient.Ping();
+                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
+                IHost host = Host.CreateDefaultBuilder(args)
+                    .UseWindowsService()
+                    .UseSystemd()
+                    .ConfigureServices((context, services) =>
+                    {
+                        ConfigureServices(services);
+                    }).Build();
+
+                try
+                {
+                    // test server connection
+                    var apiClient = host.Services.GetRequiredService<WSMApiClient>();
+                    await apiClient.Ping();
+                }
+                catch (Exception ex)
+                {
+                    host.Services.GetRequiredService<ILogger<Program>>().LogError(ex, "Could not connect to server connection, is it running?");
+                }
+                await host.RunAsync();
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                host.Services.GetRequiredService<ILogger<Program>>().LogError(ex, "Could not connect to server connection, is it running?");
+                File.WriteAllText("log.txt",ex.Message);
             }
-            await host.RunAsync();
 
 
         }

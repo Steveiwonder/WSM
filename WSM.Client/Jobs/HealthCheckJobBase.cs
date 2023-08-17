@@ -1,4 +1,6 @@
-﻿using Quartz;
+﻿using Microsoft.Extensions.Logging;
+using Quartz;
+using System;
 using System.Threading.Tasks;
 using WSM.Client.Models;
 using WSM.Shared;
@@ -9,10 +11,12 @@ namespace WSM.Client.Jobs
     {
         public const string HealthCheckDataKey = "healthcheck";
         private readonly WSMApiClient _apiClient;
+        private readonly Logger<WSMApiClient> _logger;
 
-        public HealthCheckJobBase(WSMApiClient apiClient)
+        public HealthCheckJobBase(WSMApiClient apiClient, Logger<WSMApiClient> logger)
         {
             _apiClient = apiClient;
+            _logger = logger;
         }
 
         public abstract Task Execute(IJobExecutionContext context);
@@ -24,16 +28,23 @@ namespace WSM.Client.Jobs
 
         public async Task CheckIn(HealthCheckConfigurationBase healthCheckConfiguration, string status = null)
         {
-            var checkInSuccess = await _apiClient.CheckIn(healthCheckConfiguration.Name, status ?? Constants.AvailableStatus);
-            if (!checkInSuccess)
+            try
             {
-                await _apiClient.RegisterHealthCheck(new HealthCheckRegistrationDto()
+                var checkInSuccess = await _apiClient.CheckIn(healthCheckConfiguration.Name, status ?? Constants.AvailableStatus);
+                if (!checkInSuccess)
                 {
-                    Name = healthCheckConfiguration.Name,
-                    BadStatusLimit = healthCheckConfiguration.BadStatusLimit,
-                    CheckInInterval = healthCheckConfiguration.Interval,
-                    MissedCheckInLimit = healthCheckConfiguration.MissedCheckInLimit
-                });
+                    await _apiClient.RegisterHealthCheck(new HealthCheckRegistrationDto()
+                    {
+                        Name = healthCheckConfiguration.Name,
+                        BadStatusLimit = healthCheckConfiguration.BadStatusLimit,
+                        CheckInInterval = healthCheckConfiguration.Interval,
+                        MissedCheckInLimit = healthCheckConfiguration.MissedCheckInLimit
+                    });
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error when trying to checkin");
             }
 
         }

@@ -170,12 +170,7 @@ Grab the latest copy of the [wsm.client.zip](https://github.com/Steveiwonder/WSM
 ### Creating appsettings.json
 Add an `appsettings.json` just inside `C:\wsm.server\` here is an example of the `appsettings.json`
 ```json
-{
-  "ServiceConfig": {
-    "ServiceName": "WSM",
-    "DisplayName": "Windows Server Monitor",
-    "Description": "Windows Server Monitor, for monitoring services!"
-  },
+{  
   "App": {
     "Server": {
       "Url": "https://localhost:7180",
@@ -306,9 +301,13 @@ Checks the system for free memory
 - `MinimumFreeMemory` (Required) - The minimum number of free bytes you expect the server to have
 
 ### Installing the Windows service
+
 Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start the service
 
 And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
+
+_n.b. If you would like give the service a different name, open and modify both `install-service.ps1` and `uninstall-service.ps1`, change 
+`"Windows Server Monitor"` to "My New Service Name Goes Here"._
 
 ### HTTPS Configuration?
 HTTPS is essential for the security I highly recommended configuring your docker container (server) with a HTTPS reverse proxy.
