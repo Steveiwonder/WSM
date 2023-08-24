@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Quartz;
 using Quartz.Impl;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using WSM.Client.Configuration;
 using WSM.Client.Jobs;
@@ -17,7 +19,7 @@ using WSM.Shared.Dtos;
 
 namespace WSM.Client
 {
-    internal class WindowService
+    internal class WindowService : BackgroundService
     {
         private readonly IJobFactory _jobFactory;
         private readonly AppConfiguration _appConfiguration;
@@ -35,26 +37,27 @@ namespace WSM.Client
             _client = client;
             _healthCheckDefinitions = healthCheckDefinitions;
         }
-        public void Start()
+
+        public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Service Started");
             try
             {
-
                 _client.ClearHealthChecks().Wait();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Unable to clear health checks");
             }
-            StartScheduler();
+            await StartSchedulerAsync();
             StartJobs();
         }
-        public void Stop()
+
+        public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Service Stopped");
+            return base.StopAsync(cancellationToken);
         }
-        private void StartScheduler()
+        private async Task StartSchedulerAsync()
         {
             NameValueCollection props = new NameValueCollection
             {
@@ -66,25 +69,30 @@ namespace WSM.Client
             StdSchedulerFactory factory = new StdSchedulerFactory(props);
             scheduler = factory.GetScheduler().ConfigureAwait(false).GetAwaiter().GetResult();
             scheduler.JobFactory = _jobFactory;
-            scheduler.Start().ConfigureAwait(false).GetAwaiter().GetResult();
+            await scheduler.Start();
         }
         private void StartJobs()
         {
+            if(_appConfiguration.HealthChecks==null || !_appConfiguration.HealthChecks.Any())
+            {
+                _logger.LogWarning("No health checks defined");
+                return;
+            }
             foreach (var healthCheckConfig in _appConfiguration.HealthChecks)
             {
                 var definition = _healthCheckDefinitions.FirstOrDefault(hcd => hcd.Type.Equals(healthCheckConfig.Type, StringComparison.OrdinalIgnoreCase));
-                if(definition == null)
+                if (definition == null)
                 {
                     continue;
                 }
                 RegisterJob(definition, healthCheckConfig);
-               
+
             }
         }
 
 
 
-        private void RegisterJob(IHealthCheckDefinition healthCheckDefinition ,HealthCheckConfigurationBase healthCheckConfiguration)
+        private void RegisterJob(IHealthCheckDefinition healthCheckDefinition, HealthCheckConfigurationBase healthCheckConfiguration)
         {
             var interval = healthCheckConfiguration.Interval;
             if (interval < TimeSpan.Zero)
@@ -106,5 +114,12 @@ namespace WSM.Client
             scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {          
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, stoppingToken);
+            }
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace WSM.Server.Controllers
             _healthCheckService = healthCheckService;
         }
 
-        [HttpPost("CheckIn")]
+        [HttpPost("checkin")]
         public IActionResult CheckIn(HealthCheckReportDto healthCheckReport)
         {
             if (!_healthCheckService.CheckIn(healthCheckReport))
@@ -58,7 +58,7 @@ namespace WSM.Server.Controllers
             return Ok();
         }
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public IActionResult Register(HealthCheckRegistrationDto healthCheckRegistration)
         {
             _healthCheckService.Register(healthCheckRegistration);

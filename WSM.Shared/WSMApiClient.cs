@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using WSM.Shared.Dtos;
 
@@ -47,6 +48,10 @@ namespace WSM.Shared
             await Delete("healthcheck/clear");
         }
 
+        public async Task Ping()
+        {
+            await Get("ping");
+        }
         private async Task<HttpStatusCode> Delete(string path)
         {
             var requestMessage = CreateHttpRequestMessage(HttpMethod.Delete, path);
@@ -62,6 +67,19 @@ namespace WSM.Shared
             requestMessage.Content = content;
             HttpResponseMessage httpResponse = await _httpClient.SendAsync(requestMessage);
             return httpResponse.StatusCode;
+        }
+        private async Task<T> Get<T>(string path)
+        {
+            var requestMessage = CreateHttpRequestMessage(HttpMethod.Get, path);
+            HttpResponseMessage httpResponse = await _httpClient.SendAsync(requestMessage);
+            return await httpResponse.Content.ReadFromJsonAsync<T>();
+        }
+
+        public async Task Get(string path)
+        {
+            var requestMessage = CreateHttpRequestMessage(HttpMethod.Get, path);
+            await _httpClient.SendAsync(requestMessage);
+            
         }
 
         private HttpRequestMessage CreateHttpRequestMessage(HttpMethod method, string path)

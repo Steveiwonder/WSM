@@ -1,3 +1,3 @@
-$path = "${pwd}\WSM.Client.dll"
-dotnet $path stop
-dotnet $path uninstall
+$serviceName = "Windows Server Monitor"
+sc.exe stop "$serviceName"
+sc.exe delete "$serviceName"

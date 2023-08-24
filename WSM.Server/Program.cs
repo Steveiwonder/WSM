@@ -68,8 +68,9 @@ builder.Services.AddHttpContextAccessor();
 
 /*Configuration*/
 
+var servers = builder.Configuration.GetSection("Servers").Get<IEnumerable<ServerConfiguration>>() ?? Array.Empty<ServerConfiguration>();
 
-builder.Services.AddSingleton(builder.Configuration.GetSection("Servers").Get<IEnumerable<ServerConfiguration>>());
+builder.Services.AddSingleton(servers);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -84,6 +85,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Map("/ping", () => Results.StatusCode(200));
 app.MapControllers();
 
 app.Run();
