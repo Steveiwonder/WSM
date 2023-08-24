@@ -1,4 +1,24 @@
 # WSM (Windows Server Monitor) Overview
+
+## Table of Contents
+
+- [WSM (Windows Server Monitor) Overview](#wsm-windows-server-monitor-overview)
+  - [What is WSM?](#what-is-wsm)
+  - [What can WSM monitor?](#what-can-wsm-monitor)
+  - [Why was WSM created?](#why-was-wsm-created)
+  - [Who is it for?](#who-is-it-for)
+  - [Software Architecture](#software-architecture)
+    - [Client (Windows Service)](#client-windows-service)
+    - [Server (Docker Container)](#server-docker-container)
+  - [Installation](#installation)
+    - [Server](#server)
+    - [Client](#client)
+  - [Health Check Types](#health-check-types)
+  - [HTTPS Configuration](#https-configuration)
+  - [Whats next for WSM?](#whats-next-for-wsm)
+  - [Need a new health check type?](#need-a-new-health-check-type)
+  - [Creating your own plugin](#creating-your-own-plugin)
+
 ### What is WSM?
 
 WSM is a service for monitoring different aspects of a Windows server and alerting when certain conditions are met.
@@ -6,14 +26,15 @@ WSM is a service for monitoring different aspects of a Windows server and alerti
 ### What can WSM monitor?
 See [Health Check Types](#health-check-types) for more detail but in a nutshell processes, ports, docker containers and disk space, free memory & http request for now.
 
-### Why?
-I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and inevitably something would eventually fail, I wouldn't usually find this out until someone using one of the services let me know. I wanted a tool that was free and easy to set up but couldn't find one that did everything I wanted, also I like coding so I figured it was a good candidate for a project, 3 days later WSM was born.
+### Why was WSM created?
+I had a server which ran lots of different services, Plex, Game services, VPN, DNS and a bunch of docker containers and something would periodically fail, I wouldn't usually find this out until someone using one of the versions let me know. I wanted a tool that was free, and super easy to set up but couldn't find one that did everything I wanted, also I like coding so figured it was a good candidate for a project, 3 days later WSM was born.
 
 ### Who is it for?
 Anyone. I wouldn't suggest running this in a large enterprise environment with system-critical infrastructure even though you technically could and it would be fine. It's designed for use with home labs and _maybe_ small businesses.
 
-### The Software
+### Software Architecture
 WSM is split into two main components, the server and the client(s).
+
 #### Client (Windows Service)
 The client is responsible for running all of the configured health checks and reporting their state to the server
 
@@ -97,8 +118,8 @@ don't want a notification every 15 seconds. In the example above, a notification
     }
   ],
 ```
-The `Name` of the server can be anything you one, it's included in alerts so make it something meaningful. The `ApiKey` can actually be anything you want too, it's just used for 
-authentication between client and server, keep it secret, keep it safe 😜.
+The `Name` of the server can be anything you one, it's included in alerts so make it something meaningful. The `ApiKey` can actually be anything you want too, it's used for 
+authentication between client and server, use a secure string generator, keep it secret, keep it safe 😜.
 ```json
   "Servers": [
     {
@@ -137,7 +158,7 @@ Running the container
 `docker run -d -p 80:80 -v /app/appsettings.json:/app/appsettings.json --name wsm.server --restart unless-stopped  steveiwonder/wsm.server`
 
 ## Client
-There are three steps for installing the server
+There are three steps for installing the client
 1. Extracting the release zip
 2. Create an appsettings.json file
 3. Install the Windows service
@@ -149,12 +170,7 @@ Grab the latest copy of the [wsm.client.zip](https://github.com/Steveiwonder/WSM
 ### Creating appsettings.json
 Add an `appsettings.json` just inside `C:\wsm.server\` here is an example of the `appsettings.json`
 ```json
-{
-  "ServiceConfig": {
-    "ServiceName": "WSM",
-    "DisplayName": "Windows Server Monitor",
-    "Description": "Windows Server Monitor, for monitoring services!"
-  },
+{  
   "App": {
     "Server": {
       "Url": "https://localhost:7180",
@@ -270,7 +286,7 @@ Sends a HTTP request and check for the correct status code, it can also optional
 - `ExpectedStatusCode` (Optional) - The expected HTTP status, defaults to 200
 - `MaxResponseDuration` (Optional) - The maxiumum duration you would not expect the request to exceed, defaults to 100s [HttpClient Default](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=net-7.0)
 - `RequestBody` (Optional) - The payload that can be sent, make sure you change the `Method` to the appropriate value
-- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion
+- `ExpectedResponseBody` (Optional) - An expected response body to validate upon request completion, if the response body does not match, it'll be considered a bad status report and alerts may be triggered.
 
 ### FreeMemory
 Checks the system for free memory
@@ -285,17 +301,25 @@ Checks the system for free memory
 - `MinimumFreeMemory` (Required) - The minimum number of free bytes you expect the server to have
 
 ### Installing the Windows service
+
 Run `install-service.ps1` inside `C:\wsm.client\`, this will install and start the service
 
 And that's it, you're done. If you have a notifier configured, you'll see notifications every time a new health check registers itself with the server.
 
-### Wait, what, no HTTPS?
+_n.b. If you would like give the service a different name, open and modify both `install-service.ps1` and `uninstall-service.ps1`, change 
+`"Windows Server Monitor"` to "My New Service Name Goes Here"._
 
-Put nginx in front of it and proxy to 443->80 on the docker image
+### HTTPS Configuration?
+HTTPS is essential for the security I highly recommended configuring your docker container (server) with a HTTPS reverse proxy.
+
+If you're unfamiliar with setting up HTTPS, one common approach is to use Nginx as a reverse proxy in front of your application, along with Let's Encrypt to obtain a free SSL certificate.
+There are plenty of tutorials out there, like this one for example [Setup SSL with Docker, NGINX and Lets Encrypt](https://www.programonaut.com/setup-ssl-with-docker-nginx-and-lets-encrypt/)
 
 ### What's next for WSM?
 1. Add more health check types
-2. ???
 
-### What if a health check type isn't supported?
-Create your own or raise an issue on github. Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
+### Need a new health check type?
+Create your own or raise an issue on github and I'll try to accomodate. 
+
+### Creating your own plugin
+Take a look at WSM.PluginExample to see how you write your own health check. Once you've compiled it, drop it into the clients install directory\HealthChecks alongside `WSM.HealthChecks.dll`
