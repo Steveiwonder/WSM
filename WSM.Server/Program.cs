@@ -53,6 +53,10 @@ if (notificationTypes != null)
         {
             builder.Services.AddSingleton<INotificationService, EmailNotificationService>();
         }
+        else if ("Telnyx".Equals(notificationType, StringComparison.OrdinalIgnoreCase))
+        {
+            builder.Services.AddSingleton<INotificationService, TelnyxNotificationService>();
+        }
     }
 }
 builder.Services.AddSingleton<INotificationSender, AggregateNotificationSender>();
