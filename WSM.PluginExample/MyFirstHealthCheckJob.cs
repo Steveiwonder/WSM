@@ -9,7 +9,7 @@ namespace WSM.PluginExample
     {
         private readonly ILogger<MyFirstHealthCheckJob> _logger;
 
-        public MyFirstHealthCheckJob(ILogger<MyFirstHealthCheckJob> logger, WSMApiClient apiClient):base(apiClient)
+        public MyFirstHealthCheckJob(ILogger<MyFirstHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }

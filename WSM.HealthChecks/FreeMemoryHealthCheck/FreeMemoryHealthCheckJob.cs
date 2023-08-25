@@ -13,7 +13,7 @@ namespace WSM.HealthChecks.FreeMemoryHealthCheck
     {
         private readonly ILogger<FreeMemoryHealthCheckJob> _logger;
         private const string MemoryLowStatus = "Free memory low";
-        public FreeMemoryHealthCheckJob(ILogger<FreeMemoryHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient)
+        public FreeMemoryHealthCheckJob(ILogger<FreeMemoryHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }

@@ -12,7 +12,7 @@ namespace WSM.HealthChecks.TcpPortHealthCheck
 
         private readonly ILogger<TcpPortHealthCheckJob> _logger;
 
-        public TcpPortHealthCheckJob(ILogger<TcpPortHealthCheckJob> logger, WSMApiClient client) : base(client)
+        public TcpPortHealthCheckJob(ILogger<TcpPortHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }

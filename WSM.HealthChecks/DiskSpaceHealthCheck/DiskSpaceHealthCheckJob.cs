@@ -11,7 +11,7 @@ namespace WSM.HealthChecks.DiskSpaceHealthCheck
         private readonly ILogger<DiskSpaceHealthCheckJob> _logger;
         private const string DiskNotFoundStatus = "Disk not found";
         private const string DiskSpaceLowStatus = "Disk space low";
-        public DiskSpaceHealthCheckJob(ILogger<DiskSpaceHealthCheckJob> logger, WSMApiClient client) : base(client)
+        public DiskSpaceHealthCheckJob(ILogger<DiskSpaceHealthCheckJob> logger, WSMApiClient client) : base(client, logger)
         {
             _logger = logger;
         }

@@ -11,7 +11,7 @@ namespace WSM.HealthChecks.ProcessHealthCheck
     {
         private readonly ILogger<ProcessHealthCheckJob> _logger;
 
-        public ProcessHealthCheckJob(ILogger<ProcessHealthCheckJob> logger, WSMApiClient client) : base(client)
+        public ProcessHealthCheckJob(ILogger<ProcessHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }
