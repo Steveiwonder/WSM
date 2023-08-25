@@ -78,7 +78,7 @@ Here is an example `appsettings.json`
       "Name": "Home Lab"
     }
   ],
-  "NotificationTypes": ["Email", "Twilio"],
+  "NotificationTypes": ["Email", "Twilio", "Telnyx"],
   "Email": {
     "Host": "",
     "Username": "",
@@ -90,6 +90,11 @@ Here is an example `appsettings.json`
   "Twilio": {
     "AccountId": "",
     "AuthToken": "",
+    "From": "",
+    "To": ""
+  },
+  "Telnyx": {
+    "ApiKey": "",
     "From": "",
     "To": ""
   }
@@ -138,6 +143,7 @@ authentication between client and server, use a secure string generator, keep it
 Supported values:
 - Email
 - Twilio
+- Telnyx
 
 `Email` - Send email notifications
 - `Host` the host of the email server
@@ -152,6 +158,11 @@ Supported values:
 - `AuthToken` your Twilio Auth Token - available within Twilio console https://console.twilio.com
 - `From` your Twilio phone number that the message should be sent from. For WhatsApp it's in the format of `whatsapp:+1555555555555` for SMS it'll be `+1555555555555`
 - `To` is the number the message should be sent to. For WhatsApp it's in the format of `whatsapp:+1555555555555` for SMS it'll be `+1555555555555`
+
+`Telnyx` - This can be used to send SMS via telnyx
+- `ApiKey` your telnyx api key
+- `From` your telnyx phone number that the message should be sent from.
+- `To` is the number the message should be sent to.
 
 Running the container
 
