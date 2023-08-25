@@ -7,7 +7,9 @@ namespace WSM.PluginExample
 {
     public class MyFirstHealthCheckJob : HealthCheckJobBase
     {
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly ILogger<MyFirstHealthCheckJob> _logger;
+#pragma warning restore IDE0052 // Remove unread private members
 
         public MyFirstHealthCheckJob(ILogger<MyFirstHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {

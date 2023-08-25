@@ -34,7 +34,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build & Publish WSM.Client
-      run: dotnet publish "./WSM.Client/WSM.Client.csproj" -o ./build/wsm.client/ -c Release -r win-x64
+      run: dotnet publish "./WSM.Client/WSM.Client.csproj" -o ./build/wsm.client/ -c Release -r win-x64 --no-self-contained
 
     - name: Build & Copy Health Checks
       run: |

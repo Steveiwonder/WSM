@@ -28,8 +28,8 @@ namespace WSM.Server.Services.Notifications
         {
             try
             {
-                MessagingSenderIdService service = new MessagingSenderIdService();
-                NewMessagingSenderId options = new NewMessagingSenderId
+                MessagingSenderIdService service = new();
+                NewMessagingSenderId options = new()
                 {
                     From = _from,
                     To = _to,

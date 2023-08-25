@@ -26,7 +26,7 @@ namespace WSM.Client
         private readonly WSMApiClient _client;
         private readonly IEnumerable<IHealthCheckDefinition> _healthCheckDefinitions;
         private readonly ILogger _logger;
-        private IScheduler scheduler;
+        private IScheduler _scheduler;
 
         public WindowService(ILogger<WindowService> logger, IJobFactory jobfactory, AppConfiguration appConfiguration, WSMApiClient client,
             IEnumerable<IHealthCheckDefinition> healthCheckDefinitions)
@@ -43,7 +43,7 @@ namespace WSM.Client
             _logger.LogInformation("Service Started");
             try
             {
-                _client.ClearHealthChecks().Wait();
+                _client.ClearHealthChecks().Wait(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -59,17 +59,17 @@ namespace WSM.Client
         }
         private async Task StartSchedulerAsync()
         {
-            NameValueCollection props = new NameValueCollection
+            NameValueCollection props = new()
             {
                 { "quartz.serializer.type", "binary" },
                 { "quartz.scheduler.instanceName", "MyScheduler" },
                 { "quartz.jobStore.type", "Quartz.Simpl.RAMJobStore, Quartz" },
                 { "quartz.threadPool.threadCount", "10" }
             };
-            StdSchedulerFactory factory = new StdSchedulerFactory(props);
-            scheduler = factory.GetScheduler().ConfigureAwait(false).GetAwaiter().GetResult();
-            scheduler.JobFactory = _jobFactory;
-            await scheduler.Start();
+            StdSchedulerFactory factory = new(props);
+            _scheduler = factory.GetScheduler().ConfigureAwait(false).GetAwaiter().GetResult();
+            _scheduler.JobFactory = _jobFactory;
+            await _scheduler.Start();
         }
         private void StartJobs()
         {
@@ -111,7 +111,7 @@ namespace WSM.Client
                .RepeatForever())
            .Build();
 
-            scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
+            _scheduler.ScheduleJob(job, trigger).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

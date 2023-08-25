@@ -12,8 +12,8 @@ namespace WSM.Server.Services
     public class WSMHealthCheckService
     {
 
-        private ConcurrentDictionary<string, RegisteredServer> _servers =
-            new ConcurrentDictionary<string, RegisteredServer>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, RegisteredServer> _servers =
+            new(StringComparer.OrdinalIgnoreCase);
 
 
         private readonly ILogger<WSMHealthCheckService> _logger;
@@ -79,7 +79,7 @@ namespace WSM.Server.Services
             });
         }
 
-        internal void Register(HealthCheckRegistrationDto registration)
+        internal async Task RegisterAsync(HealthCheckRegistrationDto registration)
         {
             var server = GetServer();
 
@@ -99,7 +99,7 @@ namespace WSM.Server.Services
             };
             healthCheckStatus.UpdateNextCheckInTime();
             server.TryAddHealthCheck(healthCheck.Name, healthCheckStatus);
-            _notificationSender.SendNotificationAsync("New Health Check Registration", $"Server: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
+            await _notificationSender.SendNotificationAsync("New Health Check Registration", $"Server: {server.Name}\r\nName: {registration.Name}\r\nInterval: {registration.CheckInInterval}\r\nMissed Limit: {registration.MissedCheckInLimit}\r\nBad Status Limit: {registration.BadStatusLimit}");
 
         }
 

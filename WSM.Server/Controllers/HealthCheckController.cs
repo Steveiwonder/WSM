@@ -59,9 +59,9 @@ namespace WSM.Server.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult Register(HealthCheckRegistrationDto healthCheckRegistration)
+        public async Task<IActionResult> RegisterAsync(HealthCheckRegistrationDto healthCheckRegistration)
         {
-            _healthCheckService.Register(healthCheckRegistration);
+            await _healthCheckService.RegisterAsync(healthCheckRegistration);
             return Ok();
         }
     }

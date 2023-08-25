@@ -20,12 +20,12 @@ namespace WSM.Server.Authentication
         {
             _servers = servers;
         }
-        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (!Request.Headers
                 .ContainsKey(Options.ApiKeyHeaderName))
             {
-                return AuthenticateResult.Fail($"Missing header: {Options.ApiKeyHeaderName}");
+                return Task.FromResult(AuthenticateResult.Fail($"Missing header: {Options.ApiKeyHeaderName}"));
             }
 
             string apiKey = TryGetApiKey();
@@ -33,8 +33,8 @@ namespace WSM.Server.Authentication
             var server = _servers.FirstOrDefault(d => d.ApiKey == apiKey);
             if (server == null)
             {
-                return AuthenticateResult
-                    .Fail($"Invalid token.");
+                return Task.FromResult(AuthenticateResult
+                    .Fail($"Invalid token."));
             }
             var claims = new List<Claim>()
             {
@@ -47,9 +47,9 @@ namespace WSM.Server.Authentication
             var claimsPrincipal = new ClaimsPrincipal
                 (claimsIdentity);
 
-            return AuthenticateResult.Success
+            return Task.FromResult(AuthenticateResult.Success
                 (new AuthenticationTicket(claimsPrincipal,
-                Scheme.Name));
+                Scheme.Name)));
         }
 
         private string TryGetApiKey()

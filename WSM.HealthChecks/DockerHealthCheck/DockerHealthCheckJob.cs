@@ -44,7 +44,7 @@ namespace WSM.HealthChecks.DockerHealthCheck
             }
         }
 
-        private DockerClient GetClient()
+        private static DockerClient GetClient()
         {
             return new DockerClientConfiguration(new Uri("npipe://./pipe/docker_engine")).CreateClient();
         }
