@@ -33,31 +33,29 @@ namespace WSM.HealthChecks.HttpRequestHealthCheck
             try
             {
                 var requestMessage = new HttpRequestMessage(definition.Method, definition.Url);
-                using (var client = new HttpClient())
+                using var client = new HttpClient();
+                if (!string.IsNullOrEmpty(definition.RequestBody))
                 {
-                    if (!string.IsNullOrEmpty(definition.RequestBody))
-                    {
-                        requestMessage.Content = new StringContent(definition.RequestBody);
-                    }
-                    if (definition.MaxResponseDuration != null)
-                    {
-                        client.Timeout = definition.MaxResponseDuration.Value;
-                    }
-                    var response = await client.SendAsync(requestMessage);
-                    if ((int)response.StatusCode != definition.ExpectedStatusCode)
-                    {
-                        return $"Invalid status code. Expected {definition.ExpectedStatusCode}, got {(int)response.StatusCode}";
-                    }
-                    if (!string.IsNullOrEmpty(definition.ExpectedResponseBody))
-                    {
-                        var responseBody = await response.Content.ReadAsStringAsync();
-                        if (!responseBody.Equals(definition.ExpectedResponseBody))
-                        {
-                            return $"Invalid response, expected '{definition.ExpectedResponseBody}' got '{responseBody}'";
-                        }
-                    }
-                    return Constants.AvailableStatus;
+                    requestMessage.Content = new StringContent(definition.RequestBody);
                 }
+                if (definition.MaxResponseDuration != null)
+                {
+                    client.Timeout = definition.MaxResponseDuration.Value;
+                }
+                var response = await client.SendAsync(requestMessage);
+                if ((int)response.StatusCode != definition.ExpectedStatusCode)
+                {
+                    return $"Invalid status code. Expected {definition.ExpectedStatusCode}, got {(int)response.StatusCode}";
+                }
+                if (!string.IsNullOrEmpty(definition.ExpectedResponseBody))
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    if (!responseBody.Equals(definition.ExpectedResponseBody))
+                    {
+                        return $"Invalid response, expected '{definition.ExpectedResponseBody}' got '{responseBody}'";
+                    }
+                }
+                return Constants.AvailableStatus;
             }
             catch (Exception ex) when (ex.InnerException is TimeoutException)
             {

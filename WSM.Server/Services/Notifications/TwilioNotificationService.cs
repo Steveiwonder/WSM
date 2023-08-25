@@ -27,9 +27,11 @@ namespace WSM.Server.Services.Notifications
             try
             {
                 message = message.Replace("\r\n", "\n");
-                var messageOptions = new CreateMessageOptions(new PhoneNumber(_to));
-                messageOptions.From = new PhoneNumber(_from);
-                messageOptions.Body = $"{title}\n{message}";
+                var messageOptions = new CreateMessageOptions(new PhoneNumber(_to))
+                {
+                    From = new PhoneNumber(_from),
+                    Body = $"{title}\n{message}"
+                };
 
                 await MessageResource.CreateAsync(messageOptions);
             }

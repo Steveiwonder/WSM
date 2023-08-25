@@ -31,14 +31,12 @@ namespace WSM.Server.Services.Notifications
                 mimeMessage.Subject = title;
                 mimeMessage.Body = new TextPart("plain") { Text = message };
 
-                using (var client = new SmtpClient())
-                {
+                using var client = new SmtpClient();
 
-                    client.Connect(host, port, MailKit.Security.SecureSocketOptions.StartTls);
-                    client.Authenticate(userName, password);
-                    client.Send(mimeMessage);
-                    client.Disconnect(true);
-                }
+                client.Connect(host, port, MailKit.Security.SecureSocketOptions.StartTls);
+                client.Authenticate(userName, password);
+                client.Send(mimeMessage);
+                client.Disconnect(true);
             }
             catch (Exception ex)
             {

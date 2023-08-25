@@ -21,7 +21,7 @@ namespace WSM.Client.Jobs
 
         public abstract Task Execute(IJobExecutionContext context);
 
-        public T GetConfiguration<T>(IJobExecutionContext context) where T : class
+        public static T GetConfiguration<T>(IJobExecutionContext context) where T : class
         {
             return context.JobDetail.JobDataMap[HealthCheckDataKey] as T;
         }

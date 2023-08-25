@@ -31,15 +31,13 @@ namespace WSM.HealthChecks.TcpPortHealthCheck
             }
         }
 
-        private string GetTcpStatus(TcpPortHealthCheckConfiguration definition)
+        private static string GetTcpStatus(TcpPortHealthCheckConfiguration definition)
         {
             try
             {
-                using (TcpClient client = new())
-                {
-                    client.Connect(GetHost(definition), definition.Port);
-                    client.Close();
-                }
+                using TcpClient client = new();
+                client.Connect(GetHost(definition), definition.Port);
+                client.Close();
                 return Constants.AvailableStatus;
             }
             catch
@@ -50,7 +48,7 @@ namespace WSM.HealthChecks.TcpPortHealthCheck
             return Constants.NotAvailableStatus;
         }
 
-        private string GetHost(TcpPortHealthCheckConfiguration definition)
+        private static string GetHost(TcpPortHealthCheckConfiguration definition)
         {
             return string.IsNullOrEmpty(definition.Host) ? "localhost" : definition.Host;
         }

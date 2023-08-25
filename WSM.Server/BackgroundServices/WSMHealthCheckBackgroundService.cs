@@ -35,7 +35,7 @@ namespace WSM.Server.BackgroundServices
 
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Delay(_backgroundServiceDelay);
+            await Task.Delay(_backgroundServiceDelay, stoppingToken);
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Getting server statuses");
@@ -53,21 +53,21 @@ namespace WSM.Server.BackgroundServices
                                 _logger.LogTrace($"{healthCheckKvp.Key} is not due a health check, next due {healthCheckStatus.NextStatusCheckTime}");
                                 continue;
                             }
-                            bool hasMissedCheckIn = HasMissedCheckIn(healthCheckStatus);
+                            bool hasMissedCheckIn = await HasMissedCheckInAsync(healthCheckStatus);
 
                             if (hasMissedCheckIn)
                             {
 
                                 healthCheckStatus.IncrementMissedCheckInCount();
                                 _logger.LogInformation($"{healthCheckStatus.Name} missed a checkin, {healthCheckStatus.MissedCheckInCount}/{healthCheckStatus.HealthCheck.MissedCheckInLimit}");
-                                SendMissedCheckInAlert(healthCheckStatus);
+                                await SendMissedCheckInAlertAsync(healthCheckStatus);
                             }
 
-                            bool hasBadStatus = HasBadStatus(healthCheckStatus);
+                            bool hasBadStatus = await HasBadStatusAsync(healthCheckStatus);
                             if (hasBadStatus)
                             {
                                 _logger.LogInformation($"{healthCheckStatus.Name} missed a bad status, {healthCheckStatus.BadStatusCount}/{healthCheckStatus.HealthCheck.BadStatusLimit}");
-                                SendBadStatusAlert(healthCheckStatus);
+                                await SendBadStatusAlertAsync(healthCheckStatus);
                             }
                             healthCheckStatus.UpdateNextStausCheckTime();
 
@@ -77,32 +77,32 @@ namespace WSM.Server.BackgroundServices
                             _logger.LogError(ex, "ExecuteAsync");
                         }
                     }
-                    await Task.Delay(1000);
+                    await Task.Delay(1000, stoppingToken);
                 }
             }
         }
 
-        private bool HasMissedCheckIn(HealthCheckStatus healthCheckStatus)
+        private async Task<bool> HasMissedCheckInAsync(HealthCheckStatus healthCheckStatus)
         {
             bool hasMissedCheckIn = DateTime.UtcNow > healthCheckStatus.NextCheckInTime.Add(_reportSlipDuration);
 
             if (!hasMissedCheckIn && healthCheckStatus.MissedCheckInCount != 0)
             {
                 healthCheckStatus.ResetMissedCheckInCount();
-                _notificationSender.SendNotificationAsync($"Checked In {healthCheckStatus.Name}", $"{healthCheckStatus.Name} has checked in");
+                await _notificationSender.SendNotificationAsync($"Checked In {healthCheckStatus.Name}", $"{healthCheckStatus.Name} has checked in");
             }
 
             return hasMissedCheckIn;
         }
 
-        private bool HasBadStatus(HealthCheckStatus healthCheckStatus)
+        private async Task<bool> HasBadStatusAsync(HealthCheckStatus healthCheckStatus)
         {
             bool hasBadStatus = healthCheckStatus.LastStatus != Constants.AvailableStatus;
 
             if (!hasBadStatus && healthCheckStatus.BadStatusCount != 0)
             {
                 healthCheckStatus.ResetBadStatusCount();
-                _notificationSender.SendNotificationAsync($"Status OK {healthCheckStatus.Name}", $"{healthCheckStatus.Name} is now OK");
+                await _notificationSender.SendNotificationAsync($"Status OK {healthCheckStatus.Name}", $"{healthCheckStatus.Name} is now OK");
 
             }
 
@@ -126,7 +126,7 @@ namespace WSM.Server.BackgroundServices
         }
 
 
-        private void SendMissedCheckInAlert(HealthCheckStatus healthCheckStatus)
+        private async Task SendMissedCheckInAlertAsync(HealthCheckStatus healthCheckStatus)
         {
             if (!CanSendMissedCheckInAlert(healthCheckStatus))
             {
@@ -135,12 +135,12 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} hasn't checked in, last check in time was {(healthCheckStatus.LastCheckInTime == null ? "never" : healthCheckStatus.LastCheckInTime.ToString())}";
             _logger.LogWarning(msg);
 
-            _notificationSender.SendNotificationAsync("Missed Check In", msg);
+            await _notificationSender.SendNotificationAsync("Missed Check In", msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastMissedCheckInAlertSent();
         }
 
-        private void SendBadStatusAlert(HealthCheckStatus healthCheckStatus)
+        private async Task SendBadStatusAlertAsync(HealthCheckStatus healthCheckStatus)
         {
 
             if (!CanSendBadStatusAlert(healthCheckStatus))
@@ -150,7 +150,7 @@ namespace WSM.Server.BackgroundServices
             string msg = $"{healthCheckStatus.Name} reported a bad status, '{healthCheckStatus.LastStatus}', reported {healthCheckStatus.BadStatusCount} times";
             _logger.LogWarning(msg);
 
-            _notificationSender.SendNotificationAsync("Bad Status Report", msg);
+            await _notificationSender.SendNotificationAsync("Bad Status Report", msg);
             _logger.LogInformation($"Alert sent for {healthCheckStatus.Name}");
             healthCheckStatus.UpdateLastBadCheckInAlertSent();
         }
