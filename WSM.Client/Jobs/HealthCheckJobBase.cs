@@ -11,9 +11,9 @@ namespace WSM.Client.Jobs
     {
         public const string HealthCheckDataKey = "healthcheck";
         private readonly WSMApiClient _apiClient;
-        private readonly Logger<WSMApiClient> _logger;
+        private readonly ILogger<HealthCheckJobBase> _logger;
 
-        public HealthCheckJobBase(WSMApiClient apiClient, Logger<WSMApiClient> logger)
+        public HealthCheckJobBase(WSMApiClient apiClient, ILogger<HealthCheckJobBase> logger)
         {
             _apiClient = apiClient;
             _logger = logger;

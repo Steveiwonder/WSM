@@ -13,7 +13,7 @@ namespace WSM.HealthChecks.DockerHealthCheck
         private const string DockerRunningState = "running";
         private readonly ILogger<DockerHealthCheckJob> _logger;
 
-        public DockerHealthCheckJob(ILogger<DockerHealthCheckJob> logger, WSMApiClient client) : base(client)
+        public DockerHealthCheckJob(ILogger<DockerHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }

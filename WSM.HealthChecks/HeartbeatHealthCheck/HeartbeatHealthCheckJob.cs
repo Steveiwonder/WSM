@@ -10,7 +10,7 @@ namespace WSM.HealthChecks.HeartbeatHealthCheck
     {
         private readonly ILogger<HeartbeatHealthCheckJob> _logger;
 
-        public HeartbeatHealthCheckJob(ILogger<HeartbeatHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient)
+        public HeartbeatHealthCheckJob(ILogger<HeartbeatHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }

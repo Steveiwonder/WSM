@@ -10,7 +10,7 @@ namespace WSM.HealthChecks.HttpRequestHealthCheck
     {
         private readonly ILogger<HttpRequestHealthCheckJob> _logger;
 
-        public HttpRequestHealthCheckJob(ILogger<HttpRequestHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient)
+        public HttpRequestHealthCheckJob(ILogger<HttpRequestHealthCheckJob> logger, WSMApiClient apiClient) : base(apiClient, logger)
         {
             _logger = logger;
         }
